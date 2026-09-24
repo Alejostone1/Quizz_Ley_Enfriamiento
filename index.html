@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forja & Temple — Quiz de Enfriamiento</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <p class="overline">Quiz de Enfriamiento · Ley de Enfriamiento de Newton</p>
+      <h1>🔥 Forja &amp; Temple</h1>
+      <p class="hero-sub">Laboratorio virtual de transferencia de calor: elige el metal y el medio, y observa cómo la pieza <strong>pierde o gana calor</strong>. El simulador calcula <em>k</em> a partir de propiedades físicas reales y desarrolla toda la matemática paso a paso.</p>
+      <p class="authors">Autores: <strong>Alejandro Piedrahita</strong> · <strong>Daniel Colorado</strong> · <strong>Sebastián Patiño</strong></p>
+    </div>
+    <svg class="hero-art" viewBox="0 0 220 180" aria-hidden="true">
+      <defs>
+        <radialGradient id="heroGlow"><stop offset="0" stop-color="#ffb347" stop-opacity=".9"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+        <linearGradient id="heroBar" x1="0" x2="1"><stop offset="0" stop-color="#e2530f"/><stop offset=".5" stop-color="#ffd35c"/><stop offset="1" stop-color="#e2530f"/></linearGradient>
+        <linearGradient id="heroWater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd3f2"/><stop offset="1" stop-color="#3f8fc4"/></linearGradient>
+        <radialGradient id="heroPuff"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <circle cx="110" cy="70" r="62" fill="url(#heroGlow)"/>
+      <rect x="40" y="100" width="140" height="70" rx="10" fill="url(#heroWater)" opacity=".85"/>
+      <rect x="100" y="22" width="20" height="112" rx="6" fill="url(#heroBar)"/>
+      <path d="M102,26 L80,-4 M118,26 L140,-4" stroke="#3a3f4a" stroke-width="5" stroke-linecap="round"/>
+      <g class="hero-steam">
+        <circle cx="96" cy="98" r="10" fill="url(#heroPuff)"/>
+        <circle cx="126" cy="96" r="12" fill="url(#heroPuff)"/>
+        <circle cx="110" cy="92" r="9" fill="url(#heroPuff)"/>
+      </g>
+      <rect x="34" y="94" width="152" height="80" rx="12" fill="none" stroke="#8b93a6" stroke-width="4"/>
+    </svg>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1 · CONTROLES -->
+  <section class="panel" id="sec-controls">
+    <h2><span class="num">1</span> Escenario y controles</h2>
+    <p class="lead">Carga un escenario listo para mostrar o arma el tuyo en los tres experimentos de abajo. Todos los datos se pueden <strong>digitar</strong>.</p>
+    <div class="presets" id="presets"></div>
+
+    <div class="control-grid">
+      <fieldset class="group">
+        <legend>Geometría de la pieza (cilindro)</legend>
+        <label>Diámetro D (mm)<input type="number" id="geo-D" min="0.5" max="300" step="any" value="10"></label>
+        <label>Largo L (mm)<input type="number" id="geo-L" min="0.5" max="3000" step="any" value="100"></label>
+        <p class="mini" id="geo-info"></p>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Velocidad de la simulación</legend>
+        <label>Modo
+          <select id="speed-mode">
+            <option value="auto">Automática (time-lapse progresivo)</option>
+            <option value="manual">Manual</option>
+          </select>
+        </label>
+        <label>Multiplicador de tiempo
+          <span class="range-row"><input type="range" id="speed-exp" min="-1" max="3" step="0.05" value="1" disabled><output id="speed-out">×10</output></span>
+        </label>
+        <p class="mini">El tiempo es <strong>real</strong> (segundos). En automático arranca lento para ver los medios rápidos y acelera para los lentos.</p>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Visualización</legend>
+        <label class="switch"><input type="checkbox" id="opt-thermal"><span class="slider"></span> Vista de cámara térmica</label>
+        <label class="switch"><input type="checkbox" id="opt-log"><span class="slider"></span> Tiempo en escala logarítmica</label>
+        <label class="switch"><input type="checkbox" id="opt-lab"><span class="slider"></span> Modo laboratorio (ruido de sensor)</label>
+      </fieldset>
+    </div>
+
+    <div class="button-row">
+      <button id="btn-start" class="btn primary">▶ Iniciar</button>
+      <button id="btn-pause" class="btn" disabled>⏸ Pausar</button>
+      <button id="btn-reset" class="btn">⟲ Reiniciar</button>
+    </div>
+  </section>
+
+  <!-- ESTADO -->
+  <section class="panel status-bar" aria-live="polite">
+    <div class="status-pill" id="status-pill"><span class="dot"></span> Detenido</div>
+    <div class="status-item">⏱ Tiempo: <strong id="sim-time">0 s</strong></div>
+    <div class="status-item">⚡ Velocidad: <strong id="speed-now">×1</strong></div>
+    <div class="status-item">🏁 Equilibrio total ≈ <strong id="t-total">—</strong></div>
+  </section>
+
+  <!-- 2 · EXPERIMENTOS -->
+  <section class="panel" id="sec-lanes">
+    <h2><span class="num">2</span> Tres experimentos en paralelo</h2>
+    <p class="lead">Cada tarjeta es un experimento independiente. Las <span class="tag-out">flechas rojas</span> muestran calor <strong>saliendo</strong> de la pieza y las <span class="tag-in">flechas doradas</span> calor <strong>entrando</strong>; su grosor y rapidez son proporcionales a la potencia térmica. Cambiar un dato reinicia la simulación.</p>
+    <div class="thermal-legend" id="thermal-legend" hidden>
+      <span id="tl-min"></span><div class="tl-bar"></div><span id="tl-max"></span>
+    </div>
+    <div class="lanes" id="lanes"></div>
+  </section>
+
+  <!-- 3 · GRÁFICA T(t) -->
+  <section class="panel" id="sec-chart">
+    <h2><span class="num">3</span> Temperatura vs tiempo</h2>
+    <canvas id="chartT" class="chart chart-tall"></canvas>
+    <div class="legend" id="legendT"></div>
+    <div class="button-row"><button id="btn-png" class="btn">⬇ Exportar gráfica (PNG)</button></div>
+  </section>
+
+  <!-- FOCO -->
+  <section class="panel focus-bar">
+    <span class="focus-label">🔍 Experimento en foco para las secciones 4 a 7:</span>
+    <div class="seg" id="focus-seg"></div>
+    <span class="focus-desc" id="focus-desc"></span>
+  </section>
+
+  <!-- 4 · POTENCIA / ENERGÍA -->
+  <section class="panel" id="sec-power">
+    <h2><span class="num">4</span> Potencia térmica y energía: la integral se ve</h2>
+    <p class="lead">La curva es la potencia q(t) = hA(T − Tₘ). El <strong>área sombreada</strong> bajo la curva es la energía total transferida, Q = ∫ q dt, y crece en vivo mientras corre la simulación.</p>
+    <canvas id="chartQ" class="chart"></canvas>
+  </section>
+
+  <!-- 5 · MATEMÁTICA -->
+  <section class="panel" id="sec-math">
+    <h2><span class="num">5</span> Desarrollo matemático paso a paso</h2>
+    <p class="lead">Cada paso usa los datos del experimento en foco y los números se recalculan en vivo.</p>
+    <label class="inline-input">Temperatura objetivo T* para el paso 9 (°C)
+      <input type="number" id="t-star" step="any">
+    </label>
+    <div class="steps" id="math-steps"></div>
+  </section>
+
+  <!-- 6 · TABLA COMPARATIVA -->
+  <section class="panel" id="sec-comp">
+    <h2><span class="num">6</span> Tabla comparativa de mediciones</h2>
+    <label class="inline-input">Intervalo de muestreo Δt (s)
+      <input type="number" id="dt-comp" min="0.001" step="any">
+    </label>
+    <div class="table-wrap"><table id="tbl-comp"></table></div>
+    <p class="mini" id="comp-note"></p>
+    <button id="btn-csv-comp" class="btn">⬇ Exportar tabla (CSV)</button>
+  </section>
+
+  <!-- 7 · ANÁLISIS -->
+  <section class="panel" id="sec-ana">
+    <h2><span class="num">7</span> Análisis tipo informe: cálculo experimental de k</h2>
+    <p class="lead">Con las mediciones del experimento en foco calculamos k de tres formas y las comparamos con la k teórica. Activa el <strong>modo laboratorio</strong> para simular mediciones reales con ruido.</p>
+    <label class="inline-input">Intervalo de muestreo Δt (s)
+      <input type="number" id="dt-ana" min="0.001" step="any">
+    </label>
+    <div class="table-wrap"><table id="tbl-ana"></table></div>
+    <div class="ana-grid">
+      <div class="ana-results" id="ana-results"></div>
+      <div>
+        <canvas id="chartLn" class="chart chart-small"></canvas>
+        <p class="mini">Linealización: si la Ley de Newton se cumple, ln|T − Tₘ| contra t es una <strong>recta</strong> de pendiente −k.</p>
+      </div>
+    </div>
+    <button id="btn-csv-ana" class="btn">⬇ Exportar análisis (CSV)</button>
+  </section>
+
+  <!-- 8 · TABLAS DE PROPIEDADES -->
+  <section class="panel" id="sec-ref">
+    <h2><span class="num">8</span> Tablas de propiedades (datos científicos de referencia)</h2>
+    <h3>Metales (a 300 K)</h3>
+    <div class="table-wrap tall"><table id="tbl-metals"></table></div>
+    <h3>Medios de enfriamiento / calentamiento</h3>
+    <div class="table-wrap tall"><table id="tbl-fluids"></table></div>
+    <p class="mini">Fuentes: propiedades de metales de Incropera, DeWitt, Bergman &amp; Lavine, <em>Fundamentals of Heat and Mass Transfer</em>, Tabla A.1 (300 K). Rangos de h de Incropera Tabla 1.1; los valores de h de los medios de temple son promedios efectivos típicos (ASM Handbook, Vol. 4) y en la práctica dependen de la agitación, la temperatura del baño y la geometría. Los umbrales de ebullición y de capa de vapor son aproximados.</p>
+  </section>
+
+  <!-- 9 · VALIDEZ -->
+  <section class="panel" id="sec-notes">
+    <h2><span class="num">9</span> ¿Hasta dónde vale el modelo?</h2>
+    <ul class="notes">
+      <li><strong>Número de Biot.</strong> La Ley de Newton trata la pieza como si tuviera una sola temperatura. Eso es válido si Bi = hL<sub>c</sub>/k<sub>metal</sub> &lt; 0.1. Si no, el núcleo queda más caliente que la superficie; el simulador lo estima con la solución de un término del cilindro y lo muestra en cada tarjeta.</li>
+      <li><strong>h no es constante en un temple real.</strong> Primero una capa de vapor aísla la pieza (Leidenfrost), luego la ebullición nucleada extrae calor muy rápido y al final domina la convección. El simulador anima esas etapas, pero en la ecuación usa un h promedio constante.</li>
+      <li><strong>Radiación.</strong> A 900 °C en aire, la radiación equivale a h ≈ 100 W/m²·K, diez veces la convección natural. Newton con h constante no la incluye.</li>
+      <li><strong>Propiedades a 300 K.</strong> En realidad ρ, c y k cambian con la temperatura (el c del acero casi se duplica cerca de 750 °C).</li>
+      <li><strong>Baño infinito.</strong> Se asume que el medio no se calienta (Tₘ constante). Un balde pequeño sí se calentaría.</li>
+      <li><strong>Cambios de fase del acero.</strong> La transformación austenita → martensita libera calor latente que la ecuación dT/dt = −k(T − Tₘ) no contempla.</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p><strong>Quiz de Enfriamiento</strong> — Alejandro Piedrahita · Daniel Colorado · Sebastián Patiño</p>
+  <p>Simulador basado en la Ley de Enfriamiento de Newton: dT/dt = −k(T − Tₘ), con k = hA/(ρcV).</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
