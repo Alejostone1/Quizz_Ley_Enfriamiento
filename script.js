@@ -258,16 +258,16 @@
       <div class="stage" id="${id}-stage"></div>
       <div class="phase" id="${id}-phase"></div>
       <div class="readouts">
-        <div class="big-temp"><b id="${id}-T">—</b><span>°C · temperatura media de la pieza</span></div>
-        <div class="ro"><label>Núcleo / superficie</label><b id="${id}-cs">—</b></div>
-        <div class="ro"><label>Potencia térmica</label><b id="${id}-q">—</b></div>
-        <div class="ro"><label>Energía transferida</label><b id="${id}-Q">—</b></div>
-        <div class="ro"><label>Rapidez dT/dt</label><b id="${id}-rate">—</b></div>
-        <div class="ro"><label>k · τ = 1/k</label><b id="${id}-k">—</b></div>
-        <div class="ro"><label>Número de Biot</label><b id="${id}-bi">—</b></div>
-        <div class="ro"><label>Masa · área</label><b id="${id}-m">—</b></div>
-        <div class="ro"><label>Llega al equilibrio en</label><b id="${id}-teq">—</b></div>
-        <div class="energy"><div class="fill" id="${id}-ebar"></div><span id="${id}-etext"></span></div>
+        <div class="big-temp" title="Temperatura media de la pieza en este instante: T(t) = Tₘ + (T₀ − Tₘ)·e^(−kt)."><b id="${id}-T">—</b><span>°C · temperatura media de la pieza</span></div>
+        <div class="ro" title="Temperatura estimada en el centro (núcleo) y en la superficie de la pieza. Si Biot < 0.1 son prácticamente iguales y se muestra un solo valor (uniforme)."><label>Núcleo / superficie</label><b id="${id}-cs">—</b></div>
+        <div class="ro" title="Calor por segundo que cruza la superficie: q = h·A·(T − Tₘ). ↗ sale = la pieza pierde calor; ↙ entra = la pieza gana calor."><label>Potencia térmica</label><b id="${id}-q">—</b></div>
+        <div class="ro" title="Energía total cedida o absorbida desde t = 0: Q = m·c·(T₀ − T). Es el área bajo la curva de potencia (sección 4)."><label>Energía transferida</label><b id="${id}-Q">—</b></div>
+        <div class="ro" title="Cuántos grados por segundo cambia la temperatura en este instante: dT/dt = −k·(T − Tₘ). Negativo = se enfría; positivo = se calienta."><label>Rapidez dT/dt</label><b id="${id}-rate">—</b></div>
+        <div class="ro" title="k es la constante de la Ley de Newton, calculada con k = h·A/(ρ·c·V). τ = 1/k es la constante de tiempo: en τ segundos la diferencia con el medio cae al 37 %."><label>k · τ = 1/k</label><b id="${id}-k">—</b></div>
+        <div class="ro" title="Bi = h·Lc/k_metal. Si es menor que 0.1, la temperatura dentro de la pieza es uniforme y la Ley de Newton es válida (✓). Si no, el núcleo queda más caliente que la superficie (⚠)."><label>Número de Biot</label><b id="${id}-bi">—</b></div>
+        <div class="ro" title="Masa de la pieza, m = ρ·V, y área de su superficie A (cilindro con sus dos tapas)."><label>Masa · área</label><b id="${id}-m">—</b></div>
+        <div class="ro" title="Tiempo real que tarda la pieza en quedar a menos de 0.2 % (mínimo 0.5 °C) de la temperatura del medio."><label>Llega al equilibrio en</label><b id="${id}-teq">—</b></div>
+        <div class="energy" title="Porcentaje de la diferencia inicial de temperatura con el medio que aún falta por cerrar. Llega a 0 % en el equilibrio."><div class="fill" id="${id}-ebar"></div><span id="${id}-etext"></span></div>
       </div>
     </article>`;
   }
@@ -860,7 +860,9 @@
       const y = yf(T);
       ctx.strokeStyle = color; ctx.setLineDash([2, 4]); ctx.lineWidth = 1.3;
       line(ctx, P.l, y, W - P.r, y); ctx.setLineDash([]);
-      ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.fillText(label, P.l + 6, y - 5);
+      const tw = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(251,252,255,.92)'; ctx.fillRect(W - P.r - tw - 12, y - 17, tw + 8, 15);
+      ctx.fillStyle = color; ctx.textAlign = 'right'; ctx.fillText(label, W - P.r - 8, y - 5);
     };
     ref(DRAPER, '525 °C · punto de Draper: el metal empieza a brillar', '#d97706');
     if (yMin < 0) ref(0, '0 °C', '#0284c7');

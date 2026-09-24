@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instructivo de uso — Forja & Temple · Quiz de Enfriamiento</title>
+<style>
+  :root{
+    --text:#1c2438; --muted:#55627f; --accent:#2f6fed; --violet:#7c3aed; --orange:#ea580c;
+    --border:#dde5f5; --soft:#f5f8fe; --out:#e11d48; --in:#d97706; --ok:#15803d;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; font-family:"Segoe UI", Roboto, -apple-system, sans-serif; color:var(--text);
+    background:#fff; line-height:1.6; font-size:15px;
+  }
+  .wrap{ max-width: 980px; margin: 0 auto; padding: 0 28px 60px; }
+  h1,h2,h3,h4{ color:#16213e; line-height:1.25; }
+  h2{ font-size:1.55rem; margin: 0 0 6px; display:flex; align-items:center; gap:12px; }
+  h2 .n{ display:inline-grid; place-items:center; width:38px; height:38px; border-radius:11px; color:#fff; font-size:1.05rem;
+         background: linear-gradient(135deg, var(--accent), var(--violet)); flex-shrink:0; }
+  h3{ font-size:1.12rem; margin: 26px 0 8px; }
+  h4{ font-size:1rem; margin: 18px 0 6px; }
+  p{ margin: 8px 0; }
+  .sub{ color:var(--muted); margin: 0 0 18px; }
+  section.chapter{ padding-top: 34px; border-top: 1px solid var(--border); margin-top: 34px; }
+  a{ color: var(--accent); }
+  code, kbd{ font-family: Consolas, "Cascadia Mono", monospace; font-size: .9em; background:#eef2fb; padding: 1px 6px; border-radius: 5px; }
+  kbd{ border:1px solid #cdd7ee; border-bottom-width: 2px; background:#fff; }
+
+  /* Portada */
+  .cover{
+    margin: 26px 0 0; padding: 40px 38px; border-radius: 22px; color:#1a1f33;
+    background: linear-gradient(120deg, #ffffff 0%, #fff4e8 55%, #ffe3c9 100%);
+    border:1px solid #f6d6b6; position:relative; overflow:hidden;
+  }
+  .cover::after{
+    content:''; position:absolute; right:-60px; top:-60px; width:260px; height:260px; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,160,60,.55), rgba(255,160,60,0) 70%);
+  }
+  .cover .over{ font-size:.78rem; letter-spacing:1.8px; text-transform:uppercase; font-weight:800; color:#c2410c; margin:0; }
+  .cover h1{ font-size:2.6rem; margin: 6px 0 4px; }
+  .cover .lead{ font-size:1.08rem; color:#4b5570; max-width: 640px; }
+  .cover .meta{ display:flex; flex-wrap:wrap; gap:10px; margin-top: 18px; position:relative; z-index:1; }
+  .pill{ background:#fff; border:1px solid #f1cfae; border-radius:999px; padding:6px 14px; font-size:.88rem; }
+  .pill strong{ color:#9a3412; }
+
+  /* Índice */
+  .toc{ columns: 2; column-gap: 34px; padding: 18px 22px; background: var(--soft); border:1px solid var(--border); border-radius: 14px; margin-top: 22px; }
+  .toc a{ display:block; text-decoration:none; color:var(--text); padding: 3px 0; break-inside: avoid; }
+  .toc a span{ color: var(--accent); font-weight:800; display:inline-block; width: 30px; }
+  .toc a:hover{ color: var(--accent); }
+
+  /* Bloques */
+  .callout{ border-radius: 12px; padding: 12px 16px; margin: 14px 0; border-left: 5px solid; break-inside: avoid; }
+  .tip{ background:#eff6ff; border-color:#3b82f6; }
+  .warn{ background:#fffbeb; border-color:#f59e0b; }
+  .good{ background:#f0fdf4; border-color:#22c55e; }
+  .idea{ background:#faf5ff; border-color:#a855f7; }
+  .callout strong:first-child{ display:block; margin-bottom: 2px; }
+
+  figure{ margin: 16px 0; break-inside: avoid; }
+  figure img{ width:100%; border-radius: 12px; border:1px solid var(--border); box-shadow: 0 8px 22px rgba(31,55,110,.10); display:block; }
+  figure.half{ max-width: 340px; margin-left:auto; margin-right:auto; }
+  figcaption{ font-size:.84rem; color:var(--muted); text-align:center; margin-top: 8px; }
+
+  table{ width:100%; border-collapse: collapse; margin: 12px 0; font-size:.9rem; break-inside: auto; }
+  th, td{ border:1px solid var(--border); padding: 8px 10px; text-align:left; vertical-align: top; }
+  th{ background: var(--soft); color:#334155; }
+  tr{ break-inside: avoid; }
+  td:first-child{ font-weight:700; white-space: nowrap; }
+  td.wrap-ok{ white-space: normal; }
+
+  .steps{ counter-reset: s; list-style:none; padding:0; margin: 12px 0; }
+  .steps > li{ counter-increment: s; position:relative; padding: 10px 14px 10px 58px; margin: 8px 0; background: var(--soft); border:1px solid var(--border); border-radius: 12px; break-inside: avoid; }
+  .steps > li::before{ content: counter(s); position:absolute; left:14px; top:10px; width:30px; height:30px; border-radius:50%;
+    background: var(--accent); color:#fff; font-weight:900; display:grid; place-items:center; }
+
+  .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card{ border:1px solid var(--border); border-radius: 12px; padding: 12px 14px; background:#fff; break-inside: avoid; }
+  .card h4{ margin-top: 0; }
+  .swatch{ display:inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; }
+  .out{ color: var(--out); font-weight: 800; }
+  .in{ color: var(--in); font-weight: 800; }
+  .formula{ font-family: "Cambria Math", "Cambria", serif; font-size: 1.08rem; background:#eef4ff; border:1px solid #c7d8fb; border-radius: 10px; padding: 8px 14px; display:inline-block; margin: 4px 0; }
+
+  .script{ border-left: 4px solid var(--orange); padding-left: 14px; }
+  .time{ display:inline-block; font-weight:800; color:#fff; background: var(--orange); border-radius: 6px; padding: 0 8px; font-size:.8rem; margin-right: 6px; }
+
+  .footer{ margin-top: 40px; padding-top: 18px; border-top:1px solid var(--border); color: var(--muted); font-size:.85rem; text-align:center; }
+
+  @media (max-width: 720px){
+    .toc{ columns: 1; }
+    .grid2{ grid-template-columns: 1fr; }
+    .cover h1{ font-size: 2rem; }
+  }
+
+  /* Impresión / PDF */
+  @page{ size: A4; margin: 16mm 14mm; }
+  @media print{
+    body{ font-size: 11pt; }
+    .wrap{ max-width: none; padding: 0; }
+    .cover{ margin-top: 0; min-height: 250mm; display:flex; flex-direction:column; justify-content:center; }
+    section.chapter{ break-before: page; border-top: none; margin-top: 0; padding-top: 0; }
+    .toc-page{ break-before: page; }
+    a{ color: inherit; text-decoration: none; }
+    .no-print{ display:none !important; }
+    figure img{ box-shadow: none; }
+    figure.half{ max-width: 66mm; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- PORTADA -->
+  <header class="cover" id="portada">
+    <p class="over">Quiz de Enfriamiento · Ley de Enfriamiento de Newton</p>
+    <h1>🔥 Forja &amp; Temple</h1>
+    <p class="lead"><strong>Instructivo de uso.</strong> Cómo operar el laboratorio virtual de transferencia de calor, cómo leer cada dato, gráfica y tabla, y cómo presentarlo paso a paso.</p>
+    <div class="meta">
+      <span class="pill">Autores: <strong>Alejandro Piedrahita</strong> · <strong>Daniel Colorado</strong> · <strong>Sebastián Patiño</strong></span>
+      <span class="pill">🌐 <strong>ley-enfriamiento.vercel.app</strong></span>
+      <span class="pill">Versión 1.0 · 2026</span>
+    </div>
+  </header>
+
+  <!-- ÍNDICE -->
+  <nav class="toc-page">
+    <h2 style="margin-top:28px">Contenido</h2>
+    <div class="toc">
+      <a href="#que-es"><span>1</span>¿Qué es el simulador?</a>
+      <a href="#inicio-rapido"><span>2</span>Inicio rápido en 60 segundos</a>
+      <a href="#mapa"><span>3</span>Mapa de la pantalla</a>
+      <a href="#controles"><span>4</span>Escenario y controles</a>
+      <a href="#estado"><span>5</span>Barra de estado</a>
+      <a href="#experimentos"><span>6</span>Los tres experimentos</a>
+      <a href="#escena"><span>7</span>Cómo leer la escena animada</a>
+      <a href="#lecturas"><span>8</span>Las lecturas de cada tarjeta</a>
+      <a href="#grafica"><span>9</span>Gráfica temperatura vs tiempo</a>
+      <a href="#foco"><span>10</span>El experimento en foco</a>
+      <a href="#potencia"><span>11</span>Potencia y energía (la integral)</a>
+      <a href="#matematica"><span>12</span>Matemática paso a paso</a>
+      <a href="#comparativa"><span>13</span>Tabla comparativa</a>
+      <a href="#analisis"><span>14</span>Análisis tipo informe</a>
+      <a href="#propiedades"><span>15</span>Tablas de propiedades</a>
+      <a href="#validez"><span>16</span>Validez del modelo</a>
+      <a href="#guion"><span>17</span>Guion para presentar al profesor</a>
+      <a href="#retos"><span>18</span>Experimentos para explorar</a>
+      <a href="#glosario"><span>19</span>Glosario</a>
+      <a href="#faq"><span>20</span>Preguntas frecuentes</a>
+    </div>
+  </nav>
+
+  <!-- 1 -->
+  <section class="chapter" id="que-es">
+    <h2><span class="n">1</span>¿Qué es el simulador?</h2>
+    <p class="sub">Un laboratorio virtual de enfriamiento y calentamiento de metales, con datos físicos reales.</p>
+    <p>El profesor mostró la Ley de Enfriamiento de Newton con una taza de café. Este simulador aplica la misma ley a un caso de ingeniería: el <strong>temple de piezas metálicas</strong>. Una pieza al rojo vivo se sumerge en aire, aceite, agua u otro medio, y el simulador muestra cómo cambia su temperatura con el tiempo.</p>
+    <p>La idea central es sencilla: <em>la rapidez con que cambia la temperatura es proporcional a la diferencia entre la pieza y el medio</em>.</p>
+    <p style="text-align:center"><span class="formula">dT/dt = −k (T − Tₘ) &nbsp;⟹&nbsp; T(t) = Tₘ + (T₀ − Tₘ)·e<sup>−kt</sup></span></p>
+    <p>La diferencia con un ejercicio común es que aquí <strong>k no se inventa</strong>: se calcula con las propiedades reales del metal (densidad ρ y calor específico c), el coeficiente de convección h del medio y la geometría de la pieza:</p>
+    <p style="text-align:center"><span class="formula">k = h·A / (ρ·c·V)</span></p>
+    <p>Por eso el tiempo que muestra el simulador es tiempo <strong>real</strong>, en segundos.</p>
+    <div class="grid2">
+      <div class="card"><h4>🎯 Qué puedes hacer</h4>
+        <ul>
+          <li>Comparar tres experimentos al mismo tiempo.</li>
+          <li>Elegir entre 11 metales y 10 medios, o digitar los tuyos.</li>
+          <li>Ver cómo la pieza <span class="out">pierde</span> o <span class="in">gana</span> calor.</li>
+          <li>Seguir la matemática completa paso a paso.</li>
+          <li>Calcular k a partir de mediciones, como en el informe.</li>
+        </ul>
+      </div>
+      <div class="card"><h4>💻 Requisitos</h4>
+        <ul>
+          <li>Un navegador moderno: Chrome, Edge o Firefox.</li>
+          <li>En línea: <strong>ley-enfriamiento.vercel.app</strong></li>
+          <li>Sin internet: doble clic en <code>index.html</code>.</li>
+          <li>No necesita instalar nada.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="chapter" id="inicio-rapido">
+    <h2><span class="n">2</span>Inicio rápido en 60 segundos</h2>
+    <p class="sub">Si solo tienes un minuto, haz esto.</p>
+    <ol class="steps">
+      <li><strong>Abre el simulador.</strong> Entra a <strong>ley-enfriamiento.vercel.app</strong>. Si es tu primera vez, aparece una invitación al <strong>recorrido guiado</strong>, que conviene hacer.</li>
+      <li><strong>Elige un escenario.</strong> En la sección 1 pulsa <strong>🔥 Temple clásico</strong>: acero a 900 °C en aire, aceite y agua.</li>
+      <li><strong>Pulsa ▶ Iniciar.</strong> Observa cómo cambian los colores, las flechas de calor y las burbujas. La simulación se detiene sola al llegar al equilibrio.</li>
+      <li><strong>Mira la gráfica</strong> (sección 3): las tres curvas bajan a velocidades muy distintas.</li>
+      <li><strong>Elige un experimento en foco</strong> (A, B o C) en la barra 🔍 y baja a la <strong>sección 5</strong> para ver la matemática con sus números.</li>
+    </ol>
+    <div class="callout tip"><strong>💡 Truco</strong>Pulsa <strong>⏸ Pausar</strong> en cualquier momento: todo se congela (animaciones, números y fórmulas) para que puedas explicar con calma.</div>
+    <div class="callout idea"><strong>🧭 Recorrido guiado</strong>El botón <strong>🧭 Recorrido guiado</strong> del encabezado ilumina cada parte de la pantalla y la explica en 20 pasos. Puedes avanzar con las flechas <kbd>←</kbd> <kbd>→</kbd> del teclado y salir con <kbd>Esc</kbd>.</div>
+    <figure><img src="img/11-recorrido.png" alt="Recorrido guiado resaltando una sección"><figcaption>El recorrido guiado resalta cada sección y explica para qué sirve.</figcaption></figure>
+  </section>
+
+  <!-- 3 -->
+  <section class="chapter" id="mapa">
+    <h2><span class="n">3</span>Mapa de la pantalla</h2>
+    <p class="sub">La página se lee de arriba hacia abajo, en 9 secciones numeradas.</p>
+    <table>
+      <tr><th>#</th><th>Sección</th><th>Para qué sirve</th></tr>
+      <tr><td>—</td><td class="wrap-ok">Encabezado</td><td class="wrap-ok">Título, autores y botones de ayuda: recorrido guiado, instructivo y PDF.</td></tr>
+      <tr><td>1</td><td class="wrap-ok">Escenario y controles</td><td class="wrap-ok">Escenarios listos, geometría, velocidad, visualización e Iniciar, Pausar y Reiniciar.</td></tr>
+      <tr><td>—</td><td class="wrap-ok">Barra de estado</td><td class="wrap-ok">Estado, tiempo, velocidad y tiempo total al equilibrio.</td></tr>
+      <tr><td>2</td><td class="wrap-ok">Tres experimentos</td><td class="wrap-ok">Configuración, escena animada y lecturas de A, B y C.</td></tr>
+      <tr><td>3</td><td class="wrap-ok">Temperatura vs tiempo</td><td class="wrap-ok">Gráfica en vivo de las tres curvas.</td></tr>
+      <tr><td>🔍</td><td class="wrap-ok">Experimento en foco</td><td class="wrap-ok">Elige cuál experimento se analiza en las secciones 4 a 7.</td></tr>
+      <tr><td>4</td><td class="wrap-ok">Potencia y energía</td><td class="wrap-ok">La integral Q = ∫ q dt como un área que crece.</td></tr>
+      <tr><td>5</td><td class="wrap-ok">Matemática paso a paso</td><td class="wrap-ok">Diez pasos con las fórmulas y los números del momento.</td></tr>
+      <tr><td>6</td><td class="wrap-ok">Tabla comparativa</td><td class="wrap-ok">Mediciones de los tres experimentos cada Δt.</td></tr>
+      <tr><td>7</td><td class="wrap-ok">Análisis tipo informe</td><td class="wrap-ok">k experimental calculada con tres métodos.</td></tr>
+      <tr><td>8</td><td class="wrap-ok">Tablas de propiedades</td><td class="wrap-ok">Datos científicos de metales y medios.</td></tr>
+      <tr><td>9</td><td class="wrap-ok">Validez del modelo</td><td class="wrap-ok">Hasta dónde vale la Ley de Newton.</td></tr>
+    </table>
+    <div class="callout tip"><strong>❓ Ayuda en cada sección</strong>Junto al título de cada sección hay un botón <strong>?</strong> que abre este instructivo justo en la parte correspondiente. El botón redondo <strong>?</strong> de la esquina inferior derecha abre el instructivo completo.</div>
+  </section>
+
+  <!-- 4 -->
+  <section class="chapter" id="controles">
+    <h2><span class="n">4</span>Sección 1 · Escenario y controles</h2>
+    <p class="sub">Aquí se decide qué se simula y cómo se ve.</p>
+    <figure><img src="img/01-inicio.png" alt="Encabezado y panel de controles"><figcaption>Encabezado, escenarios listos, controles y barra de estado.</figcaption></figure>
+
+    <h3>Escenarios listos</h3>
+    <p>Cada botón carga un experimento completo en las tres tarjetas. Son ideales para presentar:</p>
+    <table>
+      <tr><th>Escenario</th><th>Qué se simula</th><th>Qué demuestra</th></tr>
+      <tr><td>🔥 Temple clásico</td><td class="wrap-ok">Acero 1010 a 900 °C en aire quieto, aceite y agua.</td><td class="wrap-ok">El medio lo cambia todo: el agua enfría en segundos y el aire tarda más de una hora.</td></tr>
+      <tr><td>⚔️ Duelo de metales</td><td class="wrap-ok">Cobre, acero y aluminio a 500 °C en agua.</td><td class="wrap-ok">El aluminio cambia de temperatura más rápido porque su ρ·c es menor, aunque el cobre conduce mejor.</td></tr>
+      <tr><td>🧪 Polímero vs agua vs salmuera</td><td class="wrap-ok">Acero a 850 °C en tres medios severos.</td><td class="wrap-ok">La salmuera no forma capa de vapor, por eso enfría más rápido que el agua.</td></tr>
+      <tr><td>♨️ Ganar calor</td><td class="wrap-ok">Piezas a 25 °C dentro de un horno a 850 °C.</td><td class="wrap-ok">La misma ley sirve para calentar: la curva sube y es cóncava hacia abajo.</td></tr>
+      <tr><td>🧊 Criogenia</td><td class="wrap-ok">Cobre y acero en nitrógeno líquido a −196 °C, y aluminio a −196 °C al aire.</td><td class="wrap-ok">Temperaturas bajo cero, capa de vapor y escarcha en una pieza helada.</td></tr>
+    </table>
+
+    <h3>Geometría de la pieza</h3>
+    <p>La pieza es un <strong>cilindro</strong>. Digita el <strong>diámetro D</strong> y el <strong>largo L</strong> en milímetros. Debajo aparecen el área A (incluye las dos tapas), el volumen V y la longitud característica L<sub>c</sub> = V/A. El dibujo de la pieza cambia de proporción según D y L.</p>
+    <div class="callout idea"><strong>🔎 Para pensar</strong>Una pieza más gruesa tiene más volumen por cada unidad de área, así que su k es menor y tarda más en enfriarse. Prueba con D = 10 mm y luego con D = 40 mm.</div>
+
+    <h3>Velocidad de la simulación</h3>
+    <table>
+      <tr><th>Modo</th><th>Cómo funciona</th></tr>
+      <tr><td>Automática</td><td class="wrap-ok">Es un <em>time-lapse</em> progresivo. Empieza lento para que se vea el medio más rápido, como el agua, y acelera de forma exponencial para que el más lento, como el aire, termine en unos 30 segundos reales. La velocidad actual aparece en la barra de estado.</td></tr>
+      <tr><td>Manual</td><td class="wrap-ok">Tú eliges un multiplicador fijo entre ×0.1 (cámara lenta) y ×1000. Se puede cambiar mientras corre la simulación.</td></tr>
+    </table>
+
+    <h3>Visualización</h3>
+    <table>
+      <tr><th>Opción</th><th>Qué hace</th></tr>
+      <tr><td>Vista de cámara térmica</td><td class="wrap-ok">Pinta la escena con la paleta <em>ironbow</em> de una cámara infrarroja: negro y morado = frío, amarillo y blanco = caliente. Aparece una barra de escala con la temperatura mínima y máxima.</td></tr>
+      <tr><td>Tiempo en escala logarítmica</td><td class="wrap-ok">Cambia el eje horizontal de la gráfica 3. Sirve para comparar medios cuyos tiempos difieren mucho (segundos contra horas).</td></tr>
+      <tr><td>Modo laboratorio</td><td class="wrap-ok">Agrega <strong>ruido de sensor</strong> a las mediciones de las tablas y de la gráfica, como en un experimento real. Las escenas y las curvas siguen siendo exactas.</td></tr>
+    </table>
+    <figure><img src="img/08-termica.png" alt="Vista de cámara térmica"><figcaption>Vista de cámara térmica: cada color corresponde a una temperatura.</figcaption></figure>
+
+    <h3>Botones</h3>
+    <ul>
+      <li><strong>▶ Iniciar / Continuar:</strong> arranca o reanuda. La simulación se detiene sola cuando <em>los tres</em> experimentos llegan al equilibrio.</li>
+      <li><strong>⏸ Pausar:</strong> congela el tiempo, las animaciones, los números y las fórmulas.</li>
+      <li><strong>⟲ Reiniciar:</strong> vuelve a t = 0 con los mismos datos. En modo laboratorio genera un ruido nuevo.</li>
+    </ul>
+  </section>
+
+  <!-- 5 -->
+  <section class="chapter" id="estado">
+    <h2><span class="n">5</span>Barra de estado</h2>
+    <p class="sub">La franja que está justo debajo de los controles.</p>
+    <table>
+      <tr><th>Elemento</th><th>Significado</th></tr>
+      <tr><td>Estado</td><td class="wrap-ok"><em>Listo para iniciar</em>, <em>Simulando…</em>, <em>Pausado</em> o <em>Equilibrio térmico alcanzado ✓</em>. En rojo avisa que algún experimento tiene datos inválidos.</td></tr>
+      <tr><td>⏱ Tiempo</td><td class="wrap-ok">Tiempo <strong>físico</strong> transcurrido en el experimento (s, min u h), no el tiempo que llevas mirando la pantalla.</td></tr>
+      <tr><td>⚡ Velocidad</td><td class="wrap-ok">Cuántas veces más rápido que la realidad avanza la simulación en este momento.</td></tr>
+      <tr><td>🏁 Equilibrio total</td><td class="wrap-ok">Tiempo físico que tarda el experimento más lento en llegar al equilibrio.</td></tr>
+    </table>
+  </section>
+
+  <!-- 6 -->
+  <section class="chapter" id="experimentos">
+    <h2><span class="n">6</span>Sección 2 · Los tres experimentos</h2>
+    <p class="sub">Tres tarjetas (A, B y C), cada una un experimento independiente.</p>
+    <figure><img src="img/02-experimentos.png" alt="Tres experimentos en paralelo"><figcaption>Temple clásico en pleno proceso: aire (A), aceite (B) y agua (C).</figcaption></figure>
+
+    <h3>Configurar un experimento</h3>
+    <table>
+      <tr><th>Campo</th><th>Qué significa</th></tr>
+      <tr><td>Metal</td><td class="wrap-ok">Material de la pieza. Hay 11 metales de tabla y la opción <strong>Metal personalizado</strong>, que permite digitar ρ, c, k y la temperatura de fusión.</td></tr>
+      <tr><td>Medio</td><td class="wrap-ok">Dónde se enfría o calienta la pieza. Al cambiarlo se rellenan su temperatura y su h típicos. Con <strong>Medio personalizado</strong> digitas h y la temperatura tú mismo.</td></tr>
+      <tr><td>T₀ de la pieza</td><td class="wrap-ok">Temperatura inicial de la pieza en °C.</td></tr>
+      <tr><td>T del medio</td><td class="wrap-ok">Temperatura del aire, del baño o del horno (Tₘ). Si es mayor que T₀, la pieza <strong>gana</strong> calor.</td></tr>
+      <tr><td>h (W/m²·K)</td><td class="wrap-ok">Coeficiente de convección: qué tan bien el medio extrae (o entrega) calor. Al lado aparece el rango típico de ese medio.</td></tr>
+    </table>
+    <div class="callout warn"><strong>⚠ Cambiar un dato reinicia la simulación</strong>Así la gráfica, las tablas y la matemática siempre corresponden a los datos visibles.</div>
+
+    <h3>Validaciones físicas</h3>
+    <p>Si un dato no tiene sentido físico, la tarjeta se pone en gris, muestra un mensaje en rojo y ese experimento no se simula:</p>
+    <ul>
+      <li><strong>Punto de fusión:</strong> por ejemplo, el aluminio se funde a 660 °C, así que una pieza de aluminio a 900 °C sería líquida.</li>
+      <li><strong>Cero absoluto:</strong> ninguna temperatura puede estar por debajo de −273.15 °C.</li>
+      <li><strong>Valores positivos:</strong> ρ, c, k, h, D y L deben ser mayores que 0.</li>
+    </ul>
+
+    <h3>Encabezado de la tarjeta</h3>
+    <p>La letra (A, B o C) tiene el color de su curva en la gráfica. El título dice <em>metal → medio</em> y el subtítulo indica si la pieza <strong>pierde</strong> o <strong>gana</strong> calor. El botón <strong>🔍 Analizar</strong> pone ese experimento en foco y te lleva a la matemática.</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="chapter" id="escena">
+    <h2><span class="n">7</span>Cómo leer la escena animada</h2>
+    <p class="sub">Cada elemento del dibujo representa algo físico.</p>
+    <figure class="half"><img src="img/03-tarjeta.png" alt="Tarjeta del experimento en agua"><figcaption>Acero en agua durante la ebullición nucleada: burbujas, vapor y flechas de calor.</figcaption></figure>
+    <table>
+      <tr><th>Lo que ves</th><th>Qué significa</th></tr>
+      <tr><td>Color del metal</td><td class="wrap-ok">Frío, tiene su color natural (gris acero, cobre, dorado…). Desde 525 °C (<strong>punto de Draper</strong>) empieza a brillar: rojo oscuro → rojo cereza → naranja → amarillo → blanco. Es la escala real que usan los herreros.</td></tr>
+      <tr><td>Resplandor</td><td class="wrap-ok">El halo alrededor de la pieza crece con la temperatura.</td></tr>
+      <tr><td>Centro más claro que los bordes</td><td class="wrap-ok">Gradiente <strong>núcleo/superficie</strong>. Aparece cuando Biot ≥ 0.1: el interior se enfría más lento que la superficie.</td></tr>
+      <tr><td><span class="out">Flechas rojas hacia afuera</span></td><td class="wrap-ok">Calor <strong>saliendo</strong> de la pieza. Más gruesas y rápidas = más potencia.</td></tr>
+      <tr><td><span class="in">Flechas doradas hacia adentro</span></td><td class="wrap-ok">Calor <strong>entrando</strong> a la pieza (horno, o pieza helada al aire).</td></tr>
+      <tr><td>Contorno blanco que tiembla</td><td class="wrap-ok"><strong>Capa de vapor (Leidenfrost):</strong> el líquido hierve tan fuerte que una película de vapor envuelve la pieza y la aísla.</td></tr>
+      <tr><td>Muchas burbujas pequeñas</td><td class="wrap-ok"><strong>Ebullición nucleada:</strong> la etapa que más calor extrae en un temple real.</td></tr>
+      <tr><td>Nubes sobre el líquido</td><td class="wrap-ok">Vapor de agua, o <strong>humo</strong> gris en el caso del aceite.</td></tr>
+      <tr><td>Manchas naranja o azul que suben o bajan</td><td class="wrap-ok"><strong>Convección:</strong> el fluido calentado sube (naranja) y el enfriado baja (azul).</td></tr>
+      <tr><td>Chispas</td><td class="wrap-ok">En aire, sobre 650 °C: cascarilla incandescente que se desprende.</td></tr>
+      <tr><td>Niebla blanca</td><td class="wrap-ok">Nitrógeno líquido evaporándose.</td></tr>
+      <tr><td>Capa blanca punteada sobre la pieza</td><td class="wrap-ok"><strong>Escarcha:</strong> una pieza bajo 0 °C al aire condensa y congela la humedad.</td></tr>
+      <tr><td>Ventilador y líneas de aire</td><td class="wrap-ok">Convección <strong>forzada</strong> (medio: aire forzado).</td></tr>
+      <tr><td>Horno de ladrillo</td><td class="wrap-ok">Las paredes brillan según la temperatura del horno y la pieza descansa sobre un soporte.</td></tr>
+    </table>
+    <h3>La franja de etapa</h3>
+    <p>Debajo de la escena, un texto describe lo que pasa en ese momento: 💨 capa de vapor, 💥 ebullición nucleada, 🌊 convección en líquido, 🌬️ convección natural, 🌀 convección forzada, ♨️ calentamiento en horno o ✓ equilibrio. También avisa ✨ <em>incandescente</em> sobre 525 °C y ❄ <em>escarcha</em> bajo 0 °C.</p>
+    <figure><img src="img/09-horno.png" alt="Piezas calentándose en un horno"><figcaption>♨️ Ganar calor: las flechas doradas apuntan hacia la pieza.</figcaption></figure>
+    <figure><img src="img/10-criogenia.png" alt="Nitrógeno líquido"><figcaption>🧊 Criogenia: nitrógeno líquido a −196 °C y una pieza helada que se calienta al aire.</figcaption></figure>
+  </section>
+
+  <!-- 8 -->
+  <section class="chapter" id="lecturas">
+    <h2><span class="n">8</span>Las lecturas de cada tarjeta</h2>
+    <p class="sub">Debajo de la escena. Si pasas el mouse sobre una lectura, aparece su explicación.</p>
+    <table>
+      <tr><th>Lectura</th><th>Fórmula</th><th>Cómo interpretarla</th></tr>
+      <tr><td>Temperatura media</td><td class="wrap-ok">T = Tₘ + (T₀ − Tₘ)e<sup>−kt</sup></td><td class="wrap-ok">El número grande. Es la temperatura de la pieza según la Ley de Newton.</td></tr>
+      <tr><td>Núcleo / superficie</td><td class="wrap-ok">Solución de un término del cilindro</td><td class="wrap-ok">Si Biot &lt; 0.1 muestra un solo valor (“uniforme”). Si no, muestra dos: el centro más caliente y la superficie más fría.</td></tr>
+      <tr><td>Potencia térmica</td><td class="wrap-ok">q = hA(T − Tₘ)</td><td class="wrap-ok">Julios por segundo (W) que cruzan la superficie. <span class="out">↗ sale</span> = pierde calor; <span class="in">↙ entra</span> = gana calor.</td></tr>
+      <tr><td>Energía transferida</td><td class="wrap-ok">Q = mc(T₀ − T)</td><td class="wrap-ok">Energía total <em>cedida</em> o <em>absorbida</em> desde t = 0.</td></tr>
+      <tr><td>Rapidez dT/dt</td><td class="wrap-ok">dT/dt = −k(T − Tₘ)</td><td class="wrap-ok">Grados por segundo. Negativa = se enfría; positiva = se calienta. Es máxima al inicio.</td></tr>
+      <tr><td>k · τ</td><td class="wrap-ok">k = hA/(ρcV), τ = 1/k</td><td class="wrap-ok">k es la constante de la ley (s⁻¹). En τ segundos la diferencia con el medio cae al 37 %.</td></tr>
+      <tr><td>Número de Biot</td><td class="wrap-ok">Bi = hL<sub>c</sub>/k<sub>metal</sub></td><td class="wrap-ok"><span style="color:var(--ok);font-weight:800">✓ válido</span> si Bi &lt; 0.1; ⚠ si no (ver capítulo 16).</td></tr>
+      <tr><td>Masa · área</td><td class="wrap-ok">m = ρV</td><td class="wrap-ok">Masa de la pieza en gramos y área de su superficie en cm².</td></tr>
+      <tr><td>Llega al equilibrio en</td><td class="wrap-ok">t = ln(|ΔT₀|/ε)/k</td><td class="wrap-ok">Tiempo hasta quedar a menos de 0.2 % (mínimo 0.5 °C) de Tₘ.</td></tr>
+      <tr><td>Barra de energía</td><td class="wrap-ok">|T − Tₘ| / |T₀ − Tₘ|</td><td class="wrap-ok">Porcentaje de la diferencia inicial que aún falta cerrar. Termina en 0 %.</td></tr>
+    </table>
+  </section>
+
+  <!-- 9 -->
+  <section class="chapter" id="grafica">
+    <h2><span class="n">9</span>Sección 3 · Gráfica temperatura vs tiempo</h2>
+    <p class="sub">La gráfica principal, dibujada en vivo.</p>
+    <figure><img src="img/04-grafica.png" alt="Gráfica temperatura vs tiempo"><figcaption>Las tres curvas del temple clásico.</figcaption></figure>
+    <table>
+      <tr><th>Elemento</th><th>Significado</th></tr>
+      <tr><td>Curva de color</td><td class="wrap-ok">Temperatura de un experimento. El color coincide con la letra de su tarjeta: <span class="swatch" style="background:#ea580c"></span>A, <span class="swatch" style="background:#7c3aed"></span>B y <span class="swatch" style="background:#0284c7"></span>C.</td></tr>
+      <tr><td>Línea punteada del mismo color</td><td class="wrap-ok">Temperatura del medio (Tₘ) de ese experimento: la curva se acerca a ella sin cruzarla nunca (asíntota).</td></tr>
+      <tr><td>Círculos blancos</td><td class="wrap-ok">Mediciones de la tabla comparativa (sección 6), cada Δt. Con modo laboratorio se ven dispersas por el ruido.</td></tr>
+      <tr><td>Línea naranja punteada</td><td class="wrap-ok">525 °C, el punto de Draper, donde un metal empieza a verse brillar.</td></tr>
+      <tr><td>Línea azul “0 °C”</td><td class="wrap-ok">Aparece cuando hay temperaturas bajo cero (criogenia).</td></tr>
+      <tr><td>Punto con etiqueta</td><td class="wrap-ok">Valor actual de cada experimento.</td></tr>
+      <tr><td>Eje horizontal</td><td class="wrap-ok">En escala lineal se amplía a medida que avanza el tiempo. En logarítmica (opción de la sección 1) se comparan mejor medios muy rápidos y muy lentos.</td></tr>
+    </table>
+    <p>El botón <strong>⬇ Exportar gráfica (PNG)</strong> descarga la imagen para un informe o una presentación.</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="chapter" id="foco">
+    <h2><span class="n">10</span>El experimento en foco</h2>
+    <p class="sub">La barra 🔍 que queda fija arriba mientras bajas por la página.</p>
+    <p>Las secciones <strong>4, 5, 6 y 7</strong> estudian a fondo <em>un</em> experimento. Elige cuál con los botones <strong>A</strong>, <strong>B</strong> o <strong>C</strong>, o con el botón <strong>🔍 Analizar</strong> de cualquier tarjeta. La tarjeta en foco queda resaltada con un borde de su color.</p>
+    <div class="callout tip"><strong>💡</strong>Cambiar el foco <strong>no</strong> reinicia la simulación: puedes pausar y revisar la matemática de A, luego la de B y luego la de C.</div>
+  </section>
+
+  <!-- 11 -->
+  <section class="chapter" id="potencia">
+    <h2><span class="n">11</span>Sección 4 · Potencia y energía: la integral se ve</h2>
+    <p class="sub">La forma más visual de entender una integral.</p>
+    <figure><img src="img/05-potencia.png" alt="Gráfica de potencia con área sombreada"><figcaption>El área sombreada es la energía que ya salió de la pieza.</figcaption></figure>
+    <ul>
+      <li><strong>Curva sólida:</strong> potencia q(t) = hA|T − Tₘ| hasta el instante actual.</li>
+      <li><strong>Curva tenue punteada:</strong> cómo seguirá la potencia hasta el equilibrio (predicción del modelo).</li>
+      <li><strong>Área sombreada:</strong> energía transferida hasta ahora, Q = ∫₀ᵗ q dt. Crece en vivo.</li>
+      <li><strong>Línea vertical:</strong> el instante actual.</li>
+      <li><strong>Recuadro:</strong> el valor de Q, la potencia actual y la energía total posible Q<sub>∞</sub> = mc(T₀ − Tₘ).</li>
+    </ul>
+    <div class="callout good"><strong>✓ Conexión con el cálculo</strong>El valor del recuadro coincide con el paso 8 de la sección 5: la integral calculada con fórmulas da lo mismo que el área geométrica.</div>
+  </section>
+
+  <!-- 12 -->
+  <section class="chapter" id="matematica">
+    <h2><span class="n">12</span>Sección 5 · Matemática paso a paso</h2>
+    <p class="sub">Diez pasos con las fórmulas y los números reales del experimento en foco, recalculados en vivo.</p>
+    <figure><img src="img/06-matematica.png" alt="Paso 2: cálculo de k a partir de las propiedades"><figcaption>Paso 2: k calculada con la geometría y las propiedades reales del material.</figcaption></figure>
+    <table>
+      <tr><th>Paso</th><th>Qué muestra</th></tr>
+      <tr><td>1 · Modelo</td><td class="wrap-ok">La ecuación diferencial dT/dt = −k(T − Tₘ) y su relación con la forma del informe (k negativa).</td></tr>
+      <tr><td>2 · ¿De dónde sale k?</td><td class="wrap-ok">Balance de energía mc·dT/dt = −hA(T − Tₘ), cálculo de A, V, L<sub>c</sub> y m, y el valor de k y τ.</td></tr>
+      <tr><td>3 · Separación de variables</td><td class="wrap-ok">dT/(T − Tₘ) = −k dt.</td></tr>
+      <tr><td>4 · Integración definida</td><td class="wrap-ok">Integrales de T₀ a T y de 0 a t, y aplicación de la regla de Barrow.</td></tr>
+      <tr><td>5 · Despeje</td><td class="wrap-ok">Propiedades del logaritmo y la exponencial, y la solución T(t) con sus números.</td></tr>
+      <tr><td>6 · Evaluación</td><td class="wrap-ok">Cálculo de T en el instante actual, operación por operación.</td></tr>
+      <tr><td>7 · Derivadas</td><td class="wrap-ok">Primera derivada (rapidez, máxima al inicio), segunda derivada (concavidad) y verificación de que la solución cumple la ecuación.</td></tr>
+      <tr><td>8 · Potencia y energía</td><td class="wrap-ok">Integral de la potencia, antiderivada de la exponencial, y comprobación con mc(T₀ − T) y la energía total Q<sub>∞</sub>.</td></tr>
+      <tr><td>9 · Tiempo objetivo</td><td class="wrap-ok">Despeje de t* para llegar a una temperatura <strong>T*</strong> y la vida media t½ = ln 2 / k.</td></tr>
+      <tr><td>10 · Validez</td><td class="wrap-ok">Número de Biot y, si hace falta, la raíz ζ₁ del cilindro con la estimación de núcleo y superficie.</td></tr>
+    </table>
+    <h3>Usar la temperatura objetivo T*</h3>
+    <p>Arriba de los pasos está la casilla <strong>Temperatura objetivo T*</strong>. Digita una temperatura entre T₀ y Tₘ y pulsa <kbd>Enter</kbd>: el paso 9 calcula exactamente cuántos segundos tarda la pieza en llegar a ella.</p>
+    <div class="callout idea"><strong>🔎 Comprueba</strong>Si eliges T* justo a la mitad entre T₀ y Tₘ, el tiempo t* es igual a la vida media t½.</div>
+  </section>
+
+  <!-- 13 -->
+  <section class="chapter" id="comparativa">
+    <h2><span class="n">13</span>Sección 6 · Tabla comparativa</h2>
+    <p class="sub">Las “mediciones” de los tres experimentos, al estilo de la tabla del informe.</p>
+    <ul>
+      <li><strong>Intervalo Δt (s):</strong> cada cuántos segundos se toma una medición. Por defecto es 1/20 del tiempo total; puedes digitar otro valor.</li>
+      <li><strong>Columnas:</strong> número de medición, tiempo y temperatura de cada experimento, con su metal y su medio.</li>
+      <li>Las filas aparecen a medida que avanza la simulación. Se muestran hasta 400; si hay más, aumenta Δt.</li>
+      <li>Con <strong>modo laboratorio</strong> los valores tienen ruido de sensor.</li>
+      <li><strong>⬇ Exportar tabla (CSV)</strong> la abre en Excel con acentos correctos.</li>
+    </ul>
+  </section>
+
+  <!-- 14 -->
+  <section class="chapter" id="analisis">
+    <h2><span class="n">14</span>Sección 7 · Análisis tipo informe</h2>
+    <p class="sub">Calcula k a partir de las mediciones, como hizo el profesor con el café, y la compara con la k teórica.</p>
+    <figure><img src="img/07-analisis.png" alt="Análisis tipo informe"><figcaption>Tabla de análisis, los tres métodos para calcular k y la recta de linealización.</figcaption></figure>
+    <h3>Columnas de la tabla</h3>
+    <table>
+      <tr><th>Columna</th><th>Significado</th></tr>
+      <tr><td>ΔT/Δt</td><td class="wrap-ok">Rapidez medida entre dos mediciones seguidas.</td></tr>
+      <tr><td>T − Tₘ</td><td class="wrap-ok">Diferencia con el medio.</td></tr>
+      <tr><td>(ΔT/Δt)/(T − Tₘ)</td><td class="wrap-ok">La razón del informe; su promedio da −k.</td></tr>
+      <tr><td>ln|T − Tₘ|</td><td class="wrap-ok">Logaritmo que convierte la exponencial en una recta.</td></tr>
+      <tr><td>n/d</td><td class="wrap-ok">“No disponible”: la pieza está tan cerca de Tₘ que el cálculo no es confiable (diferencia menor que 0.5 °C o que 4 veces el ruido).</td></tr>
+    </table>
+    <h3>Los tres métodos</h3>
+    <div class="grid2">
+      <div class="card"><h4>① Promedio de razones</h4><p>El método del informe. Es sencillo, pero tiene un <strong>sesgo predecible</strong> por usar diferencias finitas: sin ruido daría (e<sup>kΔt</sup> − 1)/Δt, un poco mayor que k. El simulador muestra ese valor esperado. Con un Δt más pequeño el sesgo baja.</p></div>
+      <div class="card"><h4>② Logaritmo por intervalo</h4><p>Usa ln[(T<sub>i−1</sub> − Tₘ)/(T<sub>i</sub> − Tₘ)]/Δt, que es <strong>exacto</strong> para una exponencial: sin ruido da la k teórica.</p></div>
+      <div class="card"><h4>③ Regresión lineal</h4><p>Ajusta una recta ln|T − Tₘ| = a + b·t por mínimos cuadrados: k = −b. Muestra R² (1 = recta perfecta) y la T₀ estimada a partir del intercepto.</p></div>
+      <div class="card"><h4>📈 Gráfica de linealización</h4><p>Puntos = mediciones; línea de color = recta ajustada; línea gris = modelo teórico. Si la Ley de Newton se cumple, los puntos quedan sobre una recta.</p></div>
+    </div>
+    <div class="callout tip"><strong>💡 Recomendado</strong>Activa el <strong>modo laboratorio</strong> para ver cómo el ruido afecta a cada método. La regresión suele ser el más robusto.</div>
+  </section>
+
+  <!-- 15 -->
+  <section class="chapter" id="propiedades">
+    <h2><span class="n">15</span>Sección 8 · Tablas de propiedades</h2>
+    <p class="sub">Los datos científicos que usa el simulador.</p>
+    <figure><img src="img/12-propiedades.png" alt="Tabla de metales"><figcaption>Tabla de metales; las filas resaltadas son las que usan los experimentos.</figcaption></figure>
+    <table>
+      <tr><th>Columna</th><th>Significado</th></tr>
+      <tr><td>ρ (kg/m³)</td><td class="wrap-ok">Densidad: masa por unidad de volumen.</td></tr>
+      <tr><td>c (J/kg·K)</td><td class="wrap-ok">Calor específico: energía para subir 1 kg en 1 °C.</td></tr>
+      <tr><td>k (W/m·K)</td><td class="wrap-ok">Conductividad térmica del metal; interviene en el número de Biot.</td></tr>
+      <tr><td>α = k/ρc</td><td class="wrap-ok">Difusividad térmica: qué tan rápido se reparte el calor dentro del metal.</td></tr>
+      <tr><td>ρc</td><td class="wrap-ok">Capacidad térmica por volumen: <strong>la que decide k</strong> en la Ley de Newton.</td></tr>
+      <tr><td>T fusión</td><td class="wrap-ok">Punto de fusión; se usa para validar los datos.</td></tr>
+      <tr><td>h típico / rango</td><td class="wrap-ok">Coeficiente de convección del medio y su rango habitual.</td></tr>
+      <tr><td>Ebullición / capa de vapor</td><td class="wrap-ok">Temperaturas de superficie a partir de las cuales hay burbujas o una película de vapor.</td></tr>
+      <tr><td>En uso</td><td class="wrap-ok">Letras de los experimentos que usan esa fila.</td></tr>
+    </table>
+    <p><strong>Fuentes:</strong> Incropera, DeWitt, Bergman &amp; Lavine, <em>Fundamentals of Heat and Mass Transfer</em>, Tabla A.1 (propiedades a 300 K) y Tabla 1.1 (rangos de h); ASM Handbook, Vol. 4 (medios de temple).</p>
+  </section>
+
+  <!-- 16 -->
+  <section class="chapter" id="validez">
+    <h2><span class="n">16</span>Validez del modelo</h2>
+    <p class="sub">Entender dónde deja de aplicar la ley también es parte de entenderla.</p>
+    <h3>El número de Biot</h3>
+    <p>La Ley de Newton supone que toda la pieza tiene <em>una sola</em> temperatura. Eso es cierto si el calor viaja dentro del metal mucho más fácil de lo que sale por la superficie:</p>
+    <p style="text-align:center"><span class="formula">Bi = h·L<sub>c</sub> / k<sub>metal</sub> &lt; 0.1 &nbsp;⟹&nbsp; modelo válido</span></p>
+    <p>Con Bi ≥ 0.1 el núcleo queda más caliente que la superficie. El simulador lo estima con la <strong>solución de un término</strong> del cilindro: resuelve ζ₁·J₁(ζ₁)/J₀(ζ₁) = hR/k<sub>metal</sub> con funciones de Bessel y dibuja el gradiente dentro de la pieza.</p>
+    <h3>Otras simplificaciones</h3>
+    <ul>
+      <li><strong>h constante:</strong> un temple real pasa por capa de vapor, ebullición y convección, cada una con un h distinto. La animación muestra las etapas, pero la ecuación usa un h promedio.</li>
+      <li><strong>Radiación:</strong> a 900 °C en aire equivale a unos 100 W/m²·K, más que la convección natural, y no está incluida.</li>
+      <li><strong>Propiedades a 300 K:</strong> en realidad cambian con la temperatura.</li>
+      <li><strong>Baño infinito:</strong> el medio no se calienta.</li>
+      <li><strong>Cambios de fase del acero:</strong> la transformación austenita → martensita libera un calor latente que no se modela.</li>
+    </ul>
+  </section>
+
+  <!-- 17 -->
+  <section class="chapter" id="guion">
+    <h2><span class="n">17</span>Guion para presentar al profesor</h2>
+    <p class="sub">Una demostración de unos 7 minutos que muestra todo lo importante.</p>
+    <div class="script">
+      <p><span class="time">0:00</span><strong>Presentación.</strong> Abrir <strong>ley-enfriamiento.vercel.app</strong>, presentar a los autores y la idea: “aplicamos la Ley de Newton al temple de metales, con datos reales”.</p>
+      <p><span class="time">0:30</span><strong>Temple clásico.</strong> Pulsar el escenario y luego <strong>▶ Iniciar</strong>. Señalar el color real del acero, las <span class="out">flechas rojas</span> de calor saliendo y las etapas del agua: capa de vapor → ebullición → convección. Pausar cuando el agua esté hirviendo.</p>
+      <p><span class="time">1:30</span><strong>Gráfica.</strong> Mostrar las tres curvas y la asíntota Tₘ. Activar la escala logarítmica para comparar agua contra aire.</p>
+      <p><span class="time">2:30</span><strong>Matemática.</strong> Poner en foco el experimento C y recorrer el paso 2 (k a partir de propiedades), los pasos 4–5 (integral y despeje), el paso 7 (derivadas) y el paso 8 (la integral de energía = área de la sección 4). Digitar una T* en el paso 9.</p>
+      <p><span class="time">4:00</span><strong>Informe.</strong> Activar el modo laboratorio y mostrar los tres métodos para calcular k, el sesgo del método de razones y la recta de linealización con su R².</p>
+      <p><span class="time">5:00</span><strong>Sorpresas.</strong> <em>Duelo de metales</em> (el aluminio gana por su ρ·c), <em>Ganar calor</em> (<span class="in">flechas doradas</span>), <em>Criogenia</em> y la vista de <em>cámara térmica</em>. Probar aluminio a 900 °C para mostrar la validación del punto de fusión.</p>
+      <p><span class="time">6:30</span><strong>Cierre.</strong> Sección 9: el número de Biot y los límites del modelo. “Entender dónde deja de valer la ley también es parte de entenderla.”</p>
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section class="chapter" id="retos">
+    <h2><span class="n">18</span>Experimentos para explorar</h2>
+    <p class="sub">Preguntas para practicar, con la respuesta esperada.</p>
+    <table>
+      <tr><th>Prueba</th><th>Qué debería pasar</th></tr>
+      <tr><td class="wrap-ok">Duplicar el diámetro D</td><td class="wrap-ok">L<sub>c</sub> casi se duplica, así que k baja a casi la mitad y la pieza tarda el doble. Biot se duplica.</td></tr>
+      <tr><td class="wrap-ok">Duplicar h (agua de 3000 a 6000)</td><td class="wrap-ok">k se duplica y τ se reduce a la mitad; Biot también se duplica.</td></tr>
+      <tr><td class="wrap-ok">T* a la mitad entre T₀ y Tₘ</td><td class="wrap-ok">t* = t½ = ln 2 / k.</td></tr>
+      <tr><td class="wrap-ok">Aluminio a 700 °C</td><td class="wrap-ok">El simulador lo bloquea: el aluminio se funde a 660 °C.</td></tr>
+      <tr><td class="wrap-ok">Agua contra salmuera</td><td class="wrap-ok">La salmuera no muestra capa de vapor y enfría más rápido.</td></tr>
+      <tr><td class="wrap-ok">Δt grande en el análisis</td><td class="wrap-ok">El método ① se aleja de la k teórica; los métodos ② y ③ no.</td></tr>
+      <tr><td class="wrap-ok">Pieza fría en el horno</td><td class="wrap-ok">La curva sube, es cóncava hacia abajo y las flechas apuntan hacia la pieza.</td></tr>
+      <tr><td class="wrap-ok">Inox 304 contra acero 1010 en agua</td><td class="wrap-ok">Casi la misma k, pero el inox tiene un Biot mucho mayor (conduce peor), así que su núcleo queda más caliente.</td></tr>
+    </table>
+  </section>
+
+  <!-- 19 -->
+  <section class="chapter" id="glosario">
+    <h2><span class="n">19</span>Glosario</h2>
+    <table>
+      <tr><th>Término</th><th>Definición</th></tr>
+      <tr><td>Ley de Enfriamiento de Newton</td><td class="wrap-ok">La rapidez de cambio de la temperatura de un cuerpo es proporcional a su diferencia con el medio.</td></tr>
+      <tr><td>Tₘ</td><td class="wrap-ok">Temperatura del medio (aire, baño u horno).</td></tr>
+      <tr><td>k</td><td class="wrap-ok">Constante de enfriamiento (s⁻¹). Cuanto mayor, más rápido el cambio.</td></tr>
+      <tr><td>τ (tau)</td><td class="wrap-ok">Constante de tiempo, 1/k: la diferencia cae al 37 %.</td></tr>
+      <tr><td>t½</td><td class="wrap-ok">Vida media, ln 2/k: la diferencia cae a la mitad.</td></tr>
+      <tr><td>h</td><td class="wrap-ok">Coeficiente de convección (W/m²·K): qué tan bien el fluido intercambia calor con la superficie.</td></tr>
+      <tr><td>ρ, c</td><td class="wrap-ok">Densidad y calor específico del metal.</td></tr>
+      <tr><td>L<sub>c</sub></td><td class="wrap-ok">Longitud característica V/A de la pieza.</td></tr>
+      <tr><td>Número de Biot</td><td class="wrap-ok">hL<sub>c</sub>/k<sub>metal</sub>: compara la resistencia interna con la externa al paso del calor.</td></tr>
+      <tr><td>Capacidad concentrada</td><td class="wrap-ok">Suponer que toda la pieza tiene una sola temperatura (válido si Bi &lt; 0.1).</td></tr>
+      <tr><td>Temple</td><td class="wrap-ok">Enfriar rápido un acero caliente para endurecerlo.</td></tr>
+      <tr><td>Leidenfrost</td><td class="wrap-ok">Película de vapor que se forma entre una superficie muy caliente y un líquido, y que aísla la pieza.</td></tr>
+      <tr><td>Ebullición nucleada</td><td class="wrap-ok">Formación de muchas burbujas en la superficie; extrae mucho calor.</td></tr>
+      <tr><td>Convección</td><td class="wrap-ok">Transporte de calor por el movimiento del fluido (natural o forzada).</td></tr>
+      <tr><td>Punto de Draper</td><td class="wrap-ok">Unos 525 °C: temperatura a la que los sólidos empiezan a brillar visiblemente.</td></tr>
+      <tr><td>Ironbow</td><td class="wrap-ok">Paleta de colores típica de las cámaras térmicas.</td></tr>
+    </table>
+  </section>
+
+  <!-- 20 -->
+  <section class="chapter" id="faq">
+    <h2><span class="n">20</span>Preguntas frecuentes</h2>
+    <h4>Una tarjeta está gris con un mensaje rojo.</h4>
+    <p>Algún dato no es físicamente posible, por ejemplo una temperatura sobre el punto de fusión o bajo el cero absoluto. Lee el mensaje, corrige el dato y la tarjeta vuelve a funcionar.</p>
+    <h4>El agua termina en un instante y no alcanzo a ver nada.</h4>
+    <p>Usa la velocidad <strong>manual</strong> con un multiplicador bajo (×0.5 o ×1), o pausa en cuanto empiece. El agua enfría una pieza delgada en segundos: es física real.</p>
+    <h4>El aire tarda demasiado.</h4>
+    <p>En modo automático la velocidad aumenta sola. También puedes subir el multiplicador manual hasta ×1000.</p>
+    <h4>No veo círculos en la gráfica.</h4>
+    <p>Aparecen cada Δt de la tabla comparativa. Si Δt es grande aún no hay mediciones; reduce Δt en la sección 6.</p>
+    <h4>La tabla de análisis dice “n/d”.</h4>
+    <p>La pieza ya está casi a la temperatura del medio y la razón no es confiable. Es normal al final del experimento.</p>
+    <h4>¿Por qué k no depende de la conductividad del metal?</h4>
+    <p>En el modelo de capacidad concentrada solo importan h, la geometría y ρ·c. La conductividad aparece en el número de Biot, que dice si ese modelo es válido.</p>
+    <h4>¿Funciona sin internet?</h4>
+    <p>Sí. Descarga el proyecto y abre <code>index.html</code> con doble clic; no usa librerías externas.</p>
+  </section>
+
+  <div class="footer">
+    <p><strong>Quiz de Enfriamiento — Forja &amp; Temple</strong> · Alejandro Piedrahita · Daniel Colorado · Sebastián Patiño</p>
+    <p>ley-enfriamiento.vercel.app · github.com/Alejostone1/Quizz_Ley_Enfriamiento</p>
+  </div>
+</div>
+</body>
+</html>

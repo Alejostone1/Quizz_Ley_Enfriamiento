@@ -15,6 +15,11 @@
       <h1>🔥 Forja &amp; Temple</h1>
       <p class="hero-sub">Laboratorio virtual de transferencia de calor: elige el metal y el medio, y observa cómo la pieza <strong>pierde o gana calor</strong>. El simulador calcula <em>k</em> a partir de propiedades físicas reales y desarrolla toda la matemática paso a paso.</p>
       <p class="authors">Autores: <strong>Alejandro Piedrahita</strong> · <strong>Daniel Colorado</strong> · <strong>Sebastián Patiño</strong></p>
+      <div class="hero-actions">
+        <button class="btn primary" id="btn-tour">🧭 Recorrido guiado</button>
+        <button class="btn" id="btn-guide">📘 Instructivo de uso</button>
+        <a class="btn" href="docs/Instructivo_Quiz_Enfriamiento.pdf" download>⬇ Instructivo en PDF</a>
+      </div>
     </div>
     <svg class="hero-art" viewBox="0 0 220 180" aria-hidden="true">
       <defs>
@@ -41,7 +46,7 @@
 
   <!-- 1 · CONTROLES -->
   <section class="panel" id="sec-controls">
-    <h2><span class="num">1</span> Escenario y controles</h2>
+    <h2><span class="num">1</span> Escenario y controles <button class="help" data-guide="controles" title="¿Cómo se usa esta sección?">?</button></h2>
     <p class="lead">Carga un escenario listo para mostrar o arma el tuyo en los tres experimentos de abajo. Todos los datos se pueden <strong>digitar</strong>.</p>
     <div class="presets" id="presets"></div>
 
@@ -92,7 +97,7 @@
 
   <!-- 2 · EXPERIMENTOS -->
   <section class="panel" id="sec-lanes">
-    <h2><span class="num">2</span> Tres experimentos en paralelo</h2>
+    <h2><span class="num">2</span> Tres experimentos en paralelo <button class="help" data-guide="experimentos" title="¿Cómo se usa esta sección?">?</button></h2>
     <p class="lead">Cada tarjeta es un experimento independiente. Las <span class="tag-out">flechas rojas</span> muestran calor <strong>saliendo</strong> de la pieza y las <span class="tag-in">flechas doradas</span> calor <strong>entrando</strong>; su grosor y rapidez son proporcionales a la potencia térmica. Cambiar un dato reinicia la simulación.</p>
     <div class="thermal-legend" id="thermal-legend" hidden>
       <span id="tl-min"></span><div class="tl-bar"></div><span id="tl-max"></span>
@@ -102,7 +107,7 @@
 
   <!-- 3 · GRÁFICA T(t) -->
   <section class="panel" id="sec-chart">
-    <h2><span class="num">3</span> Temperatura vs tiempo</h2>
+    <h2><span class="num">3</span> Temperatura vs tiempo <button class="help" data-guide="grafica" title="¿Cómo se lee esta gráfica?">?</button></h2>
     <canvas id="chartT" class="chart chart-tall"></canvas>
     <div class="legend" id="legendT"></div>
     <div class="button-row"><button id="btn-png" class="btn">⬇ Exportar gráfica (PNG)</button></div>
@@ -117,14 +122,14 @@
 
   <!-- 4 · POTENCIA / ENERGÍA -->
   <section class="panel" id="sec-power">
-    <h2><span class="num">4</span> Potencia térmica y energía: la integral se ve</h2>
+    <h2><span class="num">4</span> Potencia térmica y energía: la integral se ve <button class="help" data-guide="potencia" title="¿Cómo se lee esta gráfica?">?</button></h2>
     <p class="lead">La curva es la potencia q(t) = hA(T − Tₘ). El <strong>área sombreada</strong> bajo la curva es la energía total transferida, Q = ∫ q dt, y crece en vivo mientras corre la simulación.</p>
     <canvas id="chartQ" class="chart"></canvas>
   </section>
 
   <!-- 5 · MATEMÁTICA -->
   <section class="panel" id="sec-math">
-    <h2><span class="num">5</span> Desarrollo matemático paso a paso</h2>
+    <h2><span class="num">5</span> Desarrollo matemático paso a paso <button class="help" data-guide="matematica" title="¿Qué muestra cada paso?">?</button></h2>
     <p class="lead">Cada paso usa los datos del experimento en foco y los números se recalculan en vivo.</p>
     <label class="inline-input">Temperatura objetivo T* para el paso 9 (°C)
       <input type="number" id="t-star" step="any">
@@ -134,7 +139,7 @@
 
   <!-- 6 · TABLA COMPARATIVA -->
   <section class="panel" id="sec-comp">
-    <h2><span class="num">6</span> Tabla comparativa de mediciones</h2>
+    <h2><span class="num">6</span> Tabla comparativa de mediciones <button class="help" data-guide="comparativa" title="¿Cómo se usa esta tabla?">?</button></h2>
     <label class="inline-input">Intervalo de muestreo Δt (s)
       <input type="number" id="dt-comp" min="0.001" step="any">
     </label>
@@ -145,7 +150,7 @@
 
   <!-- 7 · ANÁLISIS -->
   <section class="panel" id="sec-ana">
-    <h2><span class="num">7</span> Análisis tipo informe: cálculo experimental de k</h2>
+    <h2><span class="num">7</span> Análisis tipo informe: cálculo experimental de k <button class="help" data-guide="analisis" title="¿Cómo se interpreta el análisis?">?</button></h2>
     <p class="lead">Con las mediciones del experimento en foco calculamos k de tres formas y las comparamos con la k teórica. Activa el <strong>modo laboratorio</strong> para simular mediciones reales con ruido.</p>
     <label class="inline-input">Intervalo de muestreo Δt (s)
       <input type="number" id="dt-ana" min="0.001" step="any">
@@ -163,7 +168,7 @@
 
   <!-- 8 · TABLAS DE PROPIEDADES -->
   <section class="panel" id="sec-ref">
-    <h2><span class="num">8</span> Tablas de propiedades (datos científicos de referencia)</h2>
+    <h2><span class="num">8</span> Tablas de propiedades (datos científicos de referencia) <button class="help" data-guide="propiedades" title="¿Qué significa cada columna?">?</button></h2>
     <h3>Metales (a 300 K)</h3>
     <div class="table-wrap tall"><table id="tbl-metals"></table></div>
     <h3>Medios de enfriamiento / calentamiento</h3>
@@ -173,7 +178,7 @@
 
   <!-- 9 · VALIDEZ -->
   <section class="panel" id="sec-notes">
-    <h2><span class="num">9</span> ¿Hasta dónde vale el modelo?</h2>
+    <h2><span class="num">9</span> ¿Hasta dónde vale el modelo? <button class="help" data-guide="validez" title="Más detalle">?</button></h2>
     <ul class="notes">
       <li><strong>Número de Biot.</strong> La Ley de Newton trata la pieza como si tuviera una sola temperatura. Eso es válido si Bi = hL<sub>c</sub>/k<sub>metal</sub> &lt; 0.1. Si no, el núcleo queda más caliente que la superficie; el simulador lo estima con la solución de un término del cilindro y lo muestra en cada tarjeta.</li>
       <li><strong>h no es constante en un temple real.</strong> Primero una capa de vapor aísla la pieza (Leidenfrost), luego la ebullición nucleada extrae calor muy rápido y al final domina la convección. El simulador anima esas etapas, pero en la ecuación usa un h promedio constante.</li>
@@ -191,7 +196,34 @@
   <p>Simulador basado en la Ley de Enfriamiento de Newton: dT/dt = −k(T − Tₘ), con k = hA/(ρcV).</p>
 </footer>
 
+<!-- AYUDA: instructivo, botón flotante y bienvenida -->
+<dialog id="guide-dialog" class="guide-dialog" aria-label="Instructivo de uso">
+  <div class="gd-head">
+    <strong>📘 Instructivo de uso</strong>
+    <div class="gd-actions">
+      <button class="btn tiny" id="gd-tour">🧭 Recorrido guiado</button>
+      <a class="btn tiny" href="docs/Instructivo_Quiz_Enfriamiento.pdf" download>⬇ PDF</a>
+      <a class="btn tiny" href="docs/instructivo.html" target="_blank" rel="noopener">↗ Abrir en otra pestaña</a>
+      <button class="btn tiny" id="gd-close" aria-label="Cerrar instructivo">✕</button>
+    </div>
+  </div>
+  <iframe id="guide-frame" title="Instructivo de uso del simulador"></iframe>
+</dialog>
+
+<button class="help-fab" id="help-fab" title="Abrir el instructivo de uso" aria-label="Ayuda">?</button>
+
+<div class="welcome" id="welcome" hidden>
+  <strong>👋 ¿Primera vez aquí?</strong>
+  <p>Haz el recorrido guiado de 2 minutos: te muestra, parte por parte, cómo operar el simulador y cómo leer cada dato.</p>
+  <div class="welcome-actions">
+    <button class="btn primary tiny" id="wl-tour">🧭 Empezar recorrido</button>
+    <button class="btn tiny" id="wl-guide">📘 Leer instructivo</button>
+    <button class="btn tiny" id="wl-close">Ahora no</button>
+  </div>
+</div>
+
 <script src="data.js"></script>
 <script src="script.js"></script>
+<script src="guide.js"></script>
 </body>
 </html>
