@@ -171,14 +171,15 @@
     return null;
   }
 
-  function noiseAmp(l) { return state.lab ? 0.4 + 0.004 * Math.abs(l.d.dT0) : 0; }
+  // Ruido de sensor tipo termopar K: ±(0.3 °C + 0.5 % de la lectura).
+  function noiseAmp(T) { return state.lab ? 0.3 + 0.005 * Math.abs(T) : 0; }
   function hash01(n) { const x = Math.sin(n * 12.9898 + state.seed * 78.233) * 43758.5453; return x - Math.floor(x); }
   function measured(l, t, i, salt) {
     const base = Tat(l, t);
     if (!state.lab) return base;
     const li = LANE_IDS.indexOf(l.id);
     const u = hash01(i * 7.13 + li * 101.7 + salt * 13.1) + hash01(i * 3.71 + li * 55.3 + salt * 2.9) - 1;
-    return base + u * noiseAmp(l);
+    return base + u * noiseAmp(base);
   }
   function tStarValid(l, v) {
     if (!l.d || !l.d.dT0 || v == null || !isFinite(v)) return false;
@@ -1005,8 +1006,10 @@
   const bars = (...x) => row(mo('|'), ...x, mo('|'));
   const sp = '<mspace width="0.6em"/>';
   const unit = (u) => row('<mspace width="0.25em"/>', mtext(u));
-  const M = (...a) => `<math display="block">${row(...a)}</math>`;
-  const Mbox = (...a) => `<div class="eq-box">${M(...a)}</div>`;
+  // Elementos con explicación al hacer clic: símbolos/números (xi) y fórmulas completas (Mx).
+  const xi = (key, content) => `<mrow class="x" data-x="${key}">${content}</mrow>`;
+  const Mx = (key, ...a) => `<math display="block" class="xf" data-x="${key}">${row(...a)}</math>`;
+  const Mxbox = (key, ...a) => `<div class="eq-box">${Mx(key, ...a)}</div>`;
 
   function num(x, s = 4) {
     if (!isFinite(x)) return mtext('—');
@@ -1023,22 +1026,34 @@
     return x < 0 ? row(mo('−'), body) : body;
   }
   const pnum = (x, s) => par(num(x, s));
+  const xn = (key, x, s) => xi(key, num(x, s));
+  const xp = (key, x, s) => xi(key, pnum(x, s));
 
   const S = {
-    T: mi('T'), t: mi('t'), k: mi('k'), h: mi('h'), A: mi('A'), V: mi('V'), m: mi('m'), c: mi('c'),
-    q: mi('q'), Q: mi('Q'), e: mi('e'), dd: mi('d'), pi: mi('π'), rho: mi('ρ'), ln: mi('ln'), tau: mi('τ'),
-    D: mi('D'), L: mi('L'), n: mi('n'), i: mi('i'),
-    T0: sub(mi('T'), mn('0')), Tm: sub(mi('T'), mi('m')), Lc: sub(mi('L'), mi('c')), kmet: sub(mi('k'), mtext('metal')),
-    Ti: sub(mi('T'), mi('i')), Tim1: sub(mi('T'), row(mi('i'), mo('−'), mn('1'))),
-    Tp: sup(mi('T'), mo('′')), tp: sup(mi('t'), mo('′')),
+    T: xi('T', mi('T')), t: xi('t', mi('t')), k: xi('k', mi('k')), h: xi('h', mi('h')), A: xi('A', mi('A')),
+    V: xi('V', mi('V')), m: xi('m', mi('m')), c: xi('c', mi('c')), q: xi('q', mi('q')), Q: xi('Q', mi('Q')),
+    e: xi('e', mi('e')), dd: mi('d'), pi: xi('pi', mi('π')), rho: xi('rho', mi('ρ')), ln: xi('ln', mi('ln')),
+    tau: xi('tau', mi('τ')), D: xi('D', mi('D')), L: xi('L', mi('L')), R: xi('R', mi('R')),
+    n: xi('n', mi('n')), i: xi('i', mi('i')),
+    T0: xi('T0', sub(mi('T'), mn('0'))), Tm: xi('Tm', sub(mi('T'), mi('m'))), Lc: xi('Lc', sub(mi('L'), mi('c'))),
+    kmet: xi('kmet', sub(mi('k'), mtext('metal'))),
+    Ti: xi('Ti', sub(mi('T'), mi('i'))), Tim1: xi('Tim1', sub(mi('T'), row(mi('i'), mo('−'), mn('1')))),
+    Tp: xi('Tp', sup(mi('T'), mo('′'))), tp: xi('tp', sup(mi('t'), mo('′'))),
+    Dt: xi('Dt', row(mi('Δ'), mi('t'))), DT: xi('DT', row(mi('Δ'), mi('T'))),
+    y: xi('y', mi('y')), a: xi('a', mi('a')), b: xi('b', mi('b')),
+    ti: xi('ti', sub(mi('t'), mi('i'))), yi: xi('yi', sub(mi('y'), mi('i'))),
+    tbar: xi('tbar', over(mi('t'), mo('¯'))), ybar: xi('ybar', over(mi('y'), mo('¯'))),
+    Bi: xi('Bi', mi('Bi')), z1: xi('z1', sub(mi('ζ'), mn('1'))), J0: xi('J0', sub(mi('J'), mn('0'))), J1: xi('J1', sub(mi('J'), mn('1'))),
+    tstar: xi('tstar', sup(mi('t'), mo('*'))), Tstar: xi('Tstar', sup(mi('T'), mo('*'))), thalf: xi('thalf', sub(mi('t'), mn('½'))),
+    k1: xi('r-k1', sub(mi('k'), mn('1'))), k2: xi('r-k2', sub(mi('k'), mn('2'))), k3: xi('r-k3', sub(mi('k'), mn('3'))),
     EQ: mo('='), MINUS: mo('−'), PLUS: mo('+'),
   };
   S.IMP = row(sp, mo('⇒'), sp);
-  S.dTdt = frac(row(S.dd, S.T), row(S.dd, S.t));
+  S.dTdt = xi('dTdt', frac(row(S.dd, S.T), row(S.dd, S.t)));
   S.mkt = row(S.MINUS, S.k, S.t);
-  S.sum = under(mo('∑'), row(mi('i'), mo('='), mn('1')), mi('n'));
+  S.sum = xi('sum', under(mo('∑'), row(mi('i'), mo('='), mn('1')), mi('n')));
   const ex = (arg) => sup(S.e, arg);
-  const integ = (lo, hi) => subsup(mo('∫'), lo, hi);
+  const integ = (lo, hi) => xi('int', subsup(mo('∫'), lo, hi));
 
   function renderMath() {
     const box = $('math-steps');
@@ -1054,45 +1069,45 @@
 
     step('Modelo físico: Ley de Enfriamiento de Newton',
       `La rapidez con que cambia la temperatura de la pieza es proporcional a su diferencia con el medio (${esc(d.fluid.short)} a ${fmtTemp(l.Tm)}). Tomamos k &gt; 0 y escribimos el signo menos: es la misma ley del informe, dT/dt = k(T − Tₘ), pero con k negativa.`,
-      [M(S.dTdt, S.EQ, S.MINUS, S.k, par(S.T, S.MINUS, S.Tm))]);
+      [Mx('f-newton', S.dTdt, S.EQ, S.MINUS, S.k, par(S.T, S.MINUS, S.Tm))]);
 
     step('¿De dónde sale k? Balance de energía',
       `El calor que la pieza pierde por segundo, m·c·dT/dt, es el que sale por convección a través de su superficie, h·A·(T − Tₘ). Comparando con el paso 1 despejamos k con las propiedades reales del material, ${esc(mt.name)} (ρ = ${mt.rho} kg/m³, c = ${mt.c} J/kg·K) y del medio (h = ${l.h} W/m²·K). La pieza es un cilindro de D = ${state.geom.D} mm y L = ${state.geom.L} mm.`,
       [
-        M(S.m, S.c, S.dTdt, S.EQ, S.MINUS, S.h, S.A, par(S.T, S.MINUS, S.Tm), S.IMP, S.k, S.EQ, frac(row(S.h, S.A), row(S.m, S.c)), S.EQ, frac(row(S.h, S.A), row(S.rho, S.c, S.V)), S.EQ, frac(S.h, row(S.rho, S.c, S.Lc))),
-        M(S.A, S.EQ, S.pi, S.D, S.L, S.PLUS, mn('2'), S.pi, sup(par(frac(S.D, mn('2'))), mn('2')), S.EQ, S.pi, pnum(d.D), pnum(d.L), S.PLUS, mn('2'), S.pi, sup(pnum(d.R), mn('2')), S.EQ, num(d.A), unit('m²')),
-        M(S.V, S.EQ, S.pi, sup(par(frac(S.D, mn('2'))), mn('2')), S.L, S.EQ, S.pi, sup(pnum(d.R), mn('2')), pnum(d.L), S.EQ, num(d.V), unit('m³')),
-        M(S.Lc, S.EQ, frac(S.V, S.A), S.EQ, num(d.Lc), unit('m'), sp, mtext(';'), sp, S.m, S.EQ, S.rho, S.V, S.EQ, pnum(mt.rho), pnum(d.V), S.EQ, num(d.m), unit('kg')),
-        Mbox(S.k, S.EQ, frac(S.h, row(S.rho, S.c, S.Lc)), S.EQ, frac(num(l.h), row(pnum(mt.rho), pnum(mt.c), pnum(d.Lc))), S.EQ, num(d.k), unit('s⁻¹'), sp, mtext(';'), sp, S.tau, S.EQ, frac(mn('1'), S.k), S.EQ, num(d.tau), unit('s')),
+        Mx('f-balance', S.m, S.c, S.dTdt, S.EQ, S.MINUS, S.h, S.A, par(S.T, S.MINUS, S.Tm), S.IMP, S.k, S.EQ, frac(row(S.h, S.A), row(S.m, S.c)), S.EQ, frac(row(S.h, S.A), row(S.rho, S.c, S.V)), S.EQ, frac(S.h, row(S.rho, S.c, S.Lc))),
+        Mx('f-area', S.A, S.EQ, S.pi, S.D, S.L, S.PLUS, mn('2'), S.pi, sup(par(frac(S.D, mn('2'))), mn('2')), S.EQ, S.pi, xp('D', d.D), xp('L', d.L), S.PLUS, mn('2'), S.pi, sup(xp('R', d.R), mn('2')), S.EQ, xn('A', d.A), unit('m²')),
+        Mx('f-vol', S.V, S.EQ, S.pi, sup(par(frac(S.D, mn('2'))), mn('2')), S.L, S.EQ, S.pi, sup(xp('R', d.R), mn('2')), xp('L', d.L), S.EQ, xn('V', d.V), unit('m³')),
+        Mx('f-lc', S.Lc, S.EQ, frac(S.V, S.A), S.EQ, xn('Lc', d.Lc), unit('m'), sp, mtext(';'), sp, S.m, S.EQ, S.rho, S.V, S.EQ, xp('rho', mt.rho), xp('V', d.V), S.EQ, xn('m', d.m), unit('kg')),
+        Mxbox('f-k', S.k, S.EQ, frac(S.h, row(S.rho, S.c, S.Lc)), S.EQ, frac(xn('h', l.h), row(xp('rho', mt.rho), xp('c', mt.c), xp('Lc', d.Lc))), S.EQ, xn('k', d.k), unit('s⁻¹'), sp, mtext(';'), sp, S.tau, S.EQ, frac(mn('1'), S.k), S.EQ, xn('tau', d.tau), unit('s')),
       ],
       `<p class="note">Dato clave: la conductividad del metal <strong>no aparece</strong> en k. En este modelo sólo importan h y la capacidad térmica por volumen, ρ·c = ${fmtSig((mt.rho * mt.c) / 1e6, 3)} MJ/m³·K. Por eso en el “duelo de metales” el aluminio (ρ·c bajo) cambia de temperatura más rápido que el cobre, aunque el cobre conduzca mejor el calor.</p>`);
 
     step('Separación de variables',
       'Dejamos todo lo que depende de T a la izquierda y lo que depende de t a la derecha.',
-      [M(frac(row(S.dd, S.T), row(S.T, S.MINUS, S.Tm)), S.EQ, S.MINUS, S.k, S.dd, S.t)]);
+      [Mx('f-sep', frac(row(S.dd, S.T), row(S.T, S.MINUS, S.Tm)), S.EQ, S.MINUS, S.k, S.dd, S.t)]);
 
     step('Integración definida',
       'Integramos desde el instante inicial (t = 0, T = T₀) hasta un instante cualquiera t. La antiderivada de 1/u es ln|u|.',
       [
-        M(integ(S.T0, S.T), frac(row(S.dd, S.Tp), row(S.Tp, S.MINUS, S.Tm)), S.EQ, S.MINUS, S.k, integ(mn('0'), S.t), S.dd, S.tp),
-        M(subsup(row(mo('['), S.ln, bars(S.Tp, S.MINUS, S.Tm), mo(']')), S.T0, S.T), S.EQ, S.MINUS, S.k, S.t),
-        M(S.ln, bars(S.T, S.MINUS, S.Tm), S.MINUS, S.ln, bars(S.T0, S.MINUS, S.Tm), S.EQ, S.MINUS, S.k, S.t),
+        Mx('f-int', integ(S.T0, S.T), frac(row(S.dd, S.Tp), row(S.Tp, S.MINUS, S.Tm)), S.EQ, S.MINUS, S.k, integ(mn('0'), S.t), S.dd, S.tp),
+        Mx('f-barrow', subsup(row(mo('['), S.ln, bars(S.Tp, S.MINUS, S.Tm), mo(']')), S.T0, S.T), S.EQ, S.MINUS, S.k, S.t),
+        Mx('f-lnres', S.ln, bars(S.T, S.MINUS, S.Tm), S.MINUS, S.ln, bars(S.T0, S.MINUS, S.Tm), S.EQ, S.MINUS, S.k, S.t),
       ]);
 
     step('Despeje de T(t): la solución',
       'Usamos ln a − ln b = ln(a/b). Como T − Tₘ y T₀ − Tₘ tienen el mismo signo, el cociente es positivo y podemos quitar el valor absoluto. Aplicamos la exponencial y despejamos: esta es la curva de la sección 3.',
       [
-        M(S.ln, par(frac(row(S.T, S.MINUS, S.Tm), row(S.T0, S.MINUS, S.Tm))), S.EQ, S.MINUS, S.k, S.t, S.IMP, frac(row(S.T, S.MINUS, S.Tm), row(S.T0, S.MINUS, S.Tm)), S.EQ, ex(S.mkt)),
-        Mbox(S.T, par(S.t), S.EQ, S.Tm, S.PLUS, par(S.T0, S.MINUS, S.Tm), ex(S.mkt)),
-        M(S.T, par(S.t), S.EQ, num(l.Tm), S.PLUS, pnum(d.dT0), ex(row(S.MINUS, num(d.k), S.t))),
+        Mx('f-exp', S.ln, par(frac(row(S.T, S.MINUS, S.Tm), row(S.T0, S.MINUS, S.Tm))), S.EQ, S.MINUS, S.k, S.t, S.IMP, frac(row(S.T, S.MINUS, S.Tm), row(S.T0, S.MINUS, S.Tm)), S.EQ, ex(S.mkt)),
+        Mxbox('f-sol', S.T, par(S.t), S.EQ, S.Tm, S.PLUS, par(S.T0, S.MINUS, S.Tm), ex(S.mkt)),
+        Mx('f-solnum', S.T, par(S.t), S.EQ, xn('Tm', l.Tm), S.PLUS, xp('dT0', d.dT0), ex(row(S.MINUS, xn('k', d.k), S.t))),
       ]);
 
     step(`Evaluación en el instante actual: t = ${fmtTime(t)}`,
       'Sustituimos el tiempo de la simulación. Estos números se recalculan en vivo mientras corre.',
       [
-        M(S.MINUS, S.k, S.t, S.EQ, S.MINUS, pnum(d.k), pnum(t), S.EQ, num(-d.k * t)),
-        M(ex(num(-d.k * t)), S.EQ, num(E)),
-        Mbox(S.T, par(num(t)), S.EQ, num(l.Tm), S.PLUS, pnum(d.dT0), pnum(E), S.EQ, num(Tn, 5), unit('°C')),
+        Mx('f-eval', S.MINUS, S.k, S.t, S.EQ, S.MINUS, xp('k', d.k), xp('t', t), S.EQ, xn('mkt', -d.k * t)),
+        Mx('f-eval', ex(xn('mkt', -d.k * t)), S.EQ, xn('E', E)),
+        Mxbox('f-eval', S.T, par(xn('t', t)), S.EQ, xn('Tm', l.Tm), S.PLUS, xp('dT0', d.dT0), xp('E', E), S.EQ, xn('T', Tn, 5), unit('°C')),
       ]);
 
     const rate = -d.k * th, rate0 = -d.k * d.dT0, acc = d.k * d.k * th;
@@ -1101,10 +1116,10 @@
         ? 'La primera derivada es la rapidez de enfriamiento: negativa (la temperatura baja) y con valor absoluto máximo al inicio, cuando la diferencia con el medio es mayor. La segunda derivada es positiva: la curva es cóncava hacia arriba y se aplana al acercarse a Tₘ.'
         : 'Aquí la pieza se calienta: la primera derivada es positiva y máxima al inicio. La segunda derivada es negativa: la curva es cóncava hacia abajo y se aplana al acercarse a Tₘ.',
       [
-        M(S.dTdt, S.EQ, frac(S.dd, row(S.dd, S.t)), mo('['), S.Tm, S.PLUS, par(S.T0, S.MINUS, S.Tm), ex(S.mkt), mo(']'), S.EQ, S.MINUS, S.k, par(S.T0, S.MINUS, S.Tm), ex(S.mkt), S.EQ, S.MINUS, S.k, par(S.T, S.MINUS, S.Tm)),
-        M(sub(par(S.dTdt), row(S.t, S.EQ, num(t))), S.EQ, S.MINUS, pnum(d.k), pnum(th), S.EQ, num(rate), unit('°C/s')),
-        M(sub(par(S.dTdt), row(S.t, S.EQ, mn('0'))), S.EQ, S.MINUS, S.k, par(S.T0, S.MINUS, S.Tm), S.EQ, num(rate0), unit('°C/s')),
-        M(frac(row(sup(S.dd, mn('2')), S.T), row(S.dd, sup(S.t, mn('2')))), S.EQ, sup(S.k, mn('2')), par(S.T0, S.MINUS, S.Tm), ex(S.mkt), S.EQ, num(acc), unit('°C/s²')),
+        Mx('f-deriv', S.dTdt, S.EQ, frac(S.dd, row(S.dd, S.t)), mo('['), S.Tm, S.PLUS, par(S.T0, S.MINUS, S.Tm), ex(S.mkt), mo(']'), S.EQ, S.MINUS, S.k, par(S.T0, S.MINUS, S.Tm), ex(S.mkt), S.EQ, S.MINUS, S.k, par(S.T, S.MINUS, S.Tm)),
+        Mx('f-derivnum', sub(par(S.dTdt), row(S.t, S.EQ, xn('t', t))), S.EQ, S.MINUS, xp('k', d.k), xp('th', th), S.EQ, xn('dTdt', rate), unit('°C/s')),
+        Mx('f-derivnum', sub(par(S.dTdt), row(S.t, S.EQ, mn('0'))), S.EQ, S.MINUS, S.k, par(S.T0, S.MINUS, S.Tm), S.EQ, xn('dTdt0', rate0), unit('°C/s')),
+        Mx('f-deriv2', frac(row(sup(S.dd, mn('2')), S.T), row(S.dd, sup(S.t, mn('2')))), S.EQ, sup(S.k, mn('2')), par(S.T0, S.MINUS, S.Tm), ex(S.mkt), S.EQ, xn('d2T', acc), unit('°C/s²')),
       ],
       '<p class="good">Verificación: la derivada de la solución da −k(T − Tₘ), exactamente la ecuación del paso 1. ✓</p>');
 
@@ -1112,12 +1127,12 @@
     step('Potencia térmica y energía: una integral',
       'La potencia q es el calor por segundo que cruza la superficie. Integrándola en el tiempo obtenemos la energía transferida: es el área sombreada de la sección 4. Q &gt; 0 significa calor cedido por la pieza y Q &lt; 0, calor absorbido.',
       [
-        M(S.q, par(S.t), S.EQ, S.h, S.A, par(S.T, S.MINUS, S.Tm), S.EQ, pnum(l.h), pnum(d.A), pnum(th), S.EQ, num(qn), unit('W')),
-        M(S.Q, par(S.t), S.EQ, integ(mn('0'), S.t), S.q, par(S.tp), S.dd, S.tp, S.EQ, S.h, S.A, par(S.T0, S.MINUS, S.Tm), integ(mn('0'), S.t), ex(row(S.MINUS, S.k, S.tp)), S.dd, S.tp),
-        M(S.EQ, S.h, S.A, par(S.T0, S.MINUS, S.Tm), subsup(row(mo('['), S.MINUS, frac(ex(row(S.MINUS, S.k, S.tp)), S.k), mo(']')), mn('0'), S.t), S.EQ, frac(row(S.h, S.A), S.k), par(S.T0, S.MINUS, S.Tm), par(mn('1'), S.MINUS, ex(S.mkt))),
-        Mbox(mtext('como '), frac(row(S.h, S.A), S.k), S.EQ, S.m, S.c, mtext(':'), sp, S.Q, par(S.t), S.EQ, S.m, S.c, par(S.T0, S.MINUS, S.Tm), par(mn('1'), S.MINUS, ex(S.mkt)), S.EQ, pnum(d.m), pnum(mt.c), pnum(d.dT0), pnum(1 - E), S.EQ, num(Qn), unit('J')),
-        M(mtext('Comprobación: '), S.m, S.c, par(S.T0, S.MINUS, S.T), S.EQ, pnum(d.m), pnum(mt.c), pnum(l.T0 - Tn), S.EQ, num(d.C * (l.T0 - Tn)), unit('J'), sp, mtext('✓')),
-        M(sub(S.Q, mi('∞')), S.EQ, S.m, S.c, par(S.T0, S.MINUS, S.Tm), S.EQ, num(Qinf), unit('J')),
+        Mx('f-q', S.q, par(S.t), S.EQ, S.h, S.A, par(S.T, S.MINUS, S.Tm), S.EQ, xp('h', l.h), xp('A', d.A), xp('th', th), S.EQ, xn('q', qn), unit('W')),
+        Mx('f-Qint', S.Q, par(S.t), S.EQ, integ(mn('0'), S.t), S.q, par(S.tp), S.dd, S.tp, S.EQ, S.h, S.A, par(S.T0, S.MINUS, S.Tm), integ(mn('0'), S.t), ex(row(S.MINUS, S.k, S.tp)), S.dd, S.tp),
+        Mx('f-Qanti', S.EQ, S.h, S.A, par(S.T0, S.MINUS, S.Tm), subsup(row(mo('['), S.MINUS, frac(ex(row(S.MINUS, S.k, S.tp)), S.k), mo(']')), mn('0'), S.t), S.EQ, frac(row(S.h, S.A), S.k), par(S.T0, S.MINUS, S.Tm), par(mn('1'), S.MINUS, ex(S.mkt))),
+        Mxbox('f-Q', mtext('como '), frac(row(S.h, S.A), S.k), S.EQ, S.m, S.c, mtext(':'), sp, S.Q, par(S.t), S.EQ, S.m, S.c, par(S.T0, S.MINUS, S.Tm), par(mn('1'), S.MINUS, ex(S.mkt)), S.EQ, xp('m', d.m), xp('c', mt.c), xp('dT0', d.dT0), xp('oneMinusE', 1 - E), S.EQ, xn('Q', Qn), unit('J')),
+        Mx('f-Qcheck', mtext('Comprobación: '), S.m, S.c, par(S.T0, S.MINUS, S.T), S.EQ, xp('m', d.m), xp('c', mt.c), xp('T0mT', l.T0 - Tn), S.EQ, xn('Q', d.C * (l.T0 - Tn)), unit('J'), sp, mtext('✓')),
+        Mx('f-Qinf', sub(S.Q, mi('∞')), S.EQ, S.m, S.c, par(S.T0, S.MINUS, S.Tm), S.EQ, xn('Qinf', Qinf), unit('J')),
       ]);
 
     const ts = state.tStar;
@@ -1126,22 +1141,21 @@
       step(`¿Cuándo llega a T* = ${fmtTemp(ts)}?`,
         `Despejamos t de la solución del paso 5. Resultado: ≈ ${fmtTime(tS)}. La vida media t½ es el tiempo en que la diferencia con el medio se reduce a la mitad; no depende de la temperatura inicial.`,
         [
-          Mbox(sup(S.t, mo('*')), S.EQ, frac(mn('1'), S.k), S.ln, par(frac(row(S.T0, S.MINUS, S.Tm), row(sup(S.T, mo('*')), S.MINUS, S.Tm))), S.EQ, frac(mn('1'), num(d.k)), S.ln, par(frac(num(d.dT0), num(ts - l.Tm))), S.EQ, num(tS), unit('s')),
-          M(sub(S.t, mn('½')), S.EQ, frac(row(S.ln, mn('2')), S.k), S.EQ, num(Math.LN2 / d.k), unit('s')),
+          Mxbox('f-tstar', S.tstar, S.EQ, frac(mn('1'), S.k), S.ln, par(frac(row(S.T0, S.MINUS, S.Tm), row(S.Tstar, S.MINUS, S.Tm))), S.EQ, frac(mn('1'), xn('k', d.k)), S.ln, par(frac(xn('dT0', d.dT0), xn('TsmTm', ts - l.Tm))), S.EQ, xn('tstar', tS), unit('s')),
+          Mx('f-thalf', S.thalf, S.EQ, frac(row(S.ln, mn('2')), S.k), S.EQ, xn('thalf', Math.LN2 / d.k), unit('s')),
         ]);
     } else {
       step('¿Cuándo llega a una temperatura objetivo T*?',
         `Digita arriba una T* estrictamente entre T₀ = ${fmtTemp(l.T0)} y Tₘ = ${fmtTemp(l.Tm)} para calcular el tiempo exacto.`,
-        [M(sup(S.t, mo('*')), S.EQ, frac(mn('1'), S.k), S.ln, par(frac(row(S.T0, S.MINUS, S.Tm), row(sup(S.T, mo('*')), S.MINUS, S.Tm))))]);
+        [Mx('f-tstar', S.tstar, S.EQ, frac(mn('1'), S.k), S.ln, par(frac(row(S.T0, S.MINUS, S.Tm), row(S.Tstar, S.MINUS, S.Tm))))]);
     }
 
-    const biEqs = [M(mi('Bi'), S.EQ, frac(row(S.h, S.Lc), S.kmet), S.EQ, frac(row(pnum(l.h), pnum(d.Lc)), num(mt.k)), S.EQ, num(d.Bi, 3))];
+    const biEqs = [Mx('f-bi', S.Bi, S.EQ, frac(row(S.h, S.Lc), S.kmet), S.EQ, frac(row(xp('h', l.h), xp('Lc', d.Lc)), xn('kmet', mt.k)), S.EQ, xn('Bi', d.Bi, 3))];
     let biExtra;
     if (d.Bi < 0.1) {
       biExtra = '<p class="good">Bi &lt; 0.1 ✓ — la temperatura dentro de la pieza es prácticamente uniforme: el modelo de Newton (capacidad concentrada) es válido para este experimento.</p>';
     } else {
-      const z = sub(mi('ζ'), mn('1'));
-      biEqs.push(M(frac(row(z, sub(mi('J'), mn('1')), par(z)), row(sub(mi('J'), mn('0')), par(z))), S.EQ, frac(row(S.h, mi('R')), S.kmet), S.EQ, num(d.BiR, 3), S.IMP, z, S.EQ, num(d.z, 4)));
+      biEqs.push(Mx('f-zeta', frac(row(S.z1, S.J1, par(S.z1)), row(S.J0, par(S.z1))), S.EQ, frac(row(S.h, S.R), S.kmet), S.EQ, xn('BiR', d.BiR, 3), S.IMP, S.z1, S.EQ, xn('z1', d.z, 4)));
       biExtra = `<p class="bad">Bi ≥ 0.1 ⚠ — el interior cambia de temperatura más lento que la superficie y el modelo de Newton pierde precisión. Con la solución de un término del cilindro (Incropera), en este instante el núcleo estaría a ≈ ${fmtTemp(l.Tm + th * d.coreRatio)} y la superficie a ≈ ${fmtTemp(l.Tm + th * d.surfRatio)}. La tarjeta del experimento dibuja ese gradiente dentro de la pieza.</p>`;
     }
     step('¿Es válido el modelo? Número de Biot',
@@ -1158,8 +1172,15 @@
     const nAll = Math.floor(state.simTime / dt + 1e-9);
     const n = Math.min(nAll, 400);
     const rows = [];
-    for (let i = 0; i <= n; i++) { const t = i * dt; rows.push({ i, t, T: act.map((l) => measured(l, t, i, 1)) }); }
+    for (let i = 0; i <= n; i++) {
+      const t = i * dt;
+      rows.push({ i, t, T: act.map((l) => measured(l, t, i, 1)), real: act.map((l) => Tat(l, t)) });
+    }
     return { act, rows, capped: nAll > 400 };
+  }
+
+  function labNote(where) {
+    return `<div class="lab-note"><strong>🔬 Modo laboratorio activo.</strong> Cada medición es la temperatura real <em>más</em> el ruido de un sensor tipo termopar K, de ±(0.3 °C + 0.5 % de la lectura). La temperatura real (en gris) <strong>siempre baja</strong> de forma exponencial, pero cerca del equilibrio cambia menos que el ruido y por eso las mediciones ${where} suben y bajan. Es lo mismo que pasa con un termómetro real. Apaga el modo laboratorio para ver los valores exactos del modelo.</div>`;
   }
 
   function renderComparative() {
@@ -1167,14 +1188,15 @@
     const sig = `${state.version}|${state.dtComp}|${state.lab}|${rows.length}`;
     if (sig === state.sig.comp) return;
     state.sig.comp = sig;
-    const head = `<thead><tr><th>#</th><th>t (s)</th>${act.map((l) => `<th><span class="chip" style="background:${l.color}">${l.id}</span> T (°C)<br><small>${esc(l.d.metal.short)} · ${esc(l.d.fluid.short)}</small></th>`).join('')}</tr></thead>`;
+    $('comp-lab').innerHTML = state.lab ? labNote('de esta tabla') : '';
+    const head = `<thead><tr><th data-x="c-i">#</th><th data-x="c-t">t (s)</th>${act.map((l) => `<th data-x="c-T"><span class="chip" style="background:${l.color}">${l.id}</span> T (°C)<br><small>${esc(l.d.metal.short)} · ${esc(l.d.fluid.short)}</small></th>`).join('')}</tr></thead>`;
     const body = rows.length
-      ? rows.map((r) => `<tr><td>${r.i}</td><td>${fmtNum(r.t)}</td>${r.T.map((v) => `<td>${minus(v.toFixed(2))}</td>`).join('')}</tr>`).join('')
+      ? rows.map((r) => `<tr><td>${r.i}</td><td>${fmtNum(r.t)}</td>${r.T.map((v, j) => `<td data-lane="${act[j].id}" data-i="${r.i}">${minus(v.toFixed(2))}${state.lab ? `<small class="real">real ${minus(r.real[j].toFixed(2))}</small>` : ''}</td>`).join('')}</tr>`).join('')
       : `<tr><td colspan="${2 + act.length}" class="dim">Inicia la simulación para registrar mediciones.</td></tr>`;
     $('tbl-comp').innerHTML = head + `<tbody>${body}</tbody>`;
     $('comp-note').textContent = !rows.length ? '' : capped
       ? 'Se muestran las primeras 400 filas; aumenta Δt para cubrir todo el experimento.'
-      : `${rows.length} mediciones ${state.lab ? 'con ruido de sensor (modo laboratorio)' : 'exactas del modelo'}. También aparecen como círculos en la gráfica de la sección 3.`;
+      : `${rows.length} mediciones ${state.lab ? 'con ruido de sensor (modo laboratorio)' : 'exactas del modelo'}. También aparecen como círculos en la gráfica de la sección 3. Haz clic en cualquier valor para ver cómo se obtuvo.`;
   }
 
   // ===================== ANÁLISIS TIPO INFORME =====================
@@ -1183,13 +1205,13 @@
     if (!l || !l.d || l.d.error) return null;
     const d = l.d, dt = state.dtAna;
     const rows = [];
+    const thr = Math.max(0.5, 4 * noiseAmp(l.Tm));
     if (dt > 0 && d.tEnd > 0) {
       const n = Math.min(400, Math.floor(Math.min(state.simTime, d.tEnd) / dt + 1e-9));
-      const thr = Math.max(0.5, 4 * noiseAmp(l));
       for (let i = 0; i <= n; i++) {
         const t = i * dt, T = measured(l, t, i, 2), th = T - l.Tm;
         const ok = Math.abs(th) > thr;
-        const r = { i, t, T, th, ln: ok ? Math.log(Math.abs(th)) : null, rate: null, ratio: null, kLog: null };
+        const r = { i, t, T, real: Tat(l, t), th, ok, ln: ok ? Math.log(Math.abs(th)) : null, rate: null, ratio: null, kLog: null };
         if (i > 0) {
           const p = rows[i - 1];
           r.rate = (T - p.T) / dt;
@@ -1208,21 +1230,24 @@
       let sxx = 0, sxy = 0, syy = 0;
       pts.forEach(([x, y]) => { sxx += (x - tb) ** 2; sxy += (x - tb) * (y - yb); syy += (y - yb) ** 2; });
       const b = sxy / sxx, a = yb - b * tb;
-      reg = { a, b, r2: syy > 0 ? (sxy * sxy) / (sxx * syy) : 1, n: pts.length };
+      reg = { a, b, r2: syy > 0 ? (sxy * sxy) / (sxx * syy) : 1, n: pts.length, tb, yb };
     }
     return {
-      l, d, dt, rows, reg,
+      l, d, dt, rows, reg, thr,
       k1: ratios.length ? -mean(ratios) : null, n1: ratios.length,
       k2: kls.length ? mean(kls) : null, n2: kls.length,
+      bias: Math.expm1(d.k * dt) / dt,
     };
   }
 
   function renderAnalysis() {
     const A = anaData();
+    state.lastAna = A;
     const sig = A ? `${state.version}|${state.focus}|${state.dtAna}|${state.lab}|${A.rows.length}` : `none|${state.version}|${state.focus}`;
     if (sig === state.sig.ana) return;
     state.sig.ana = sig;
     const tbl = $('tbl-ana'), res = $('ana-results');
+    $('ana-lab').innerHTML = A && state.lab ? labNote('de la columna T') : '';
     if (!A) {
       tbl.innerHTML = '';
       res.innerHTML = '<div class="alert">El experimento en foco tiene datos inválidos.</div>';
@@ -1230,39 +1255,253 @@
       return;
     }
     const { l, d, rows, reg } = A;
-    const head = '<thead><tr><th>i</th><th>t (s)</th><th>T (°C)</th><th>ΔT/Δt (°C/s)</th><th>T − Tₘ</th><th>(ΔT/Δt)/(T − Tₘ)</th><th>ln|T − Tₘ|</th></tr></thead>';
+    const head = '<thead><tr><th data-x="c-i">i</th><th data-x="c-t">t (s)</th><th data-x="c-T">T (°C)</th><th data-x="c-rate">ΔT/Δt (°C/s)</th><th data-x="c-th">T − Tₘ</th><th data-x="c-ratio">(ΔT/Δt)/(T − Tₘ)</th><th data-x="c-ln">ln|T − Tₘ|</th></tr></thead>';
     const body = rows.length
-      ? rows.map((r) => `<tr><td>${r.i}</td><td>${fmtNum(r.t)}</td><td>${minus(r.T.toFixed(2))}</td><td>${r.rate == null ? '—' : minus(r.rate.toFixed(3))}</td><td>${minus(r.th.toFixed(2))}</td><td class="${r.ratio == null ? 'dim' : ''}">${r.ratio == null ? (r.i ? 'n/d' : '—') : minus(r.ratio.toFixed(5))}</td><td class="${r.ln == null ? 'dim' : ''}">${r.ln == null ? 'n/d' : minus(r.ln.toFixed(4))}</td></tr>`).join('')
+      ? rows.map((r) => `<tr data-row="${r.i}" title="Clic para ver cómo se calculó esta fila"><td>${r.i}</td><td>${fmtNum(r.t)}</td><td>${minus(r.T.toFixed(2))}${state.lab ? `<small class="real">real ${minus(r.real.toFixed(2))}</small>` : ''}</td><td>${r.rate == null ? '—' : minus(r.rate.toFixed(3))}</td><td>${minus(r.th.toFixed(2))}</td><td class="${r.ratio == null ? 'dim' : ''}">${r.ratio == null ? (r.i ? 'n/d' : '—') : minus(r.ratio.toFixed(5))}</td><td class="${r.ln == null ? 'dim' : ''}">${r.ln == null ? 'n/d' : minus(r.ln.toFixed(4))}</td></tr>`).join('')
       : '<tr><td colspan="7" class="dim">Inicia la simulación para registrar mediciones.</td></tr>';
     tbl.innerHTML = head + `<tbody>${body}</tbody>`;
 
     const kT = d.k;
-    const err = (k) => `${((k - kT) / kT) * 100 >= 0 ? '+' : '−'}${Math.abs(((k - kT) / kT) * 100).toFixed(2)} % frente a la teórica`;
-    const bias = Math.expm1(kT * A.dt) / A.dt;
-    const valOrWait = (k, n) => (k == null ? '<p class="val">Faltan mediciones…</p>' : `<p class="val">${fmtSig(k, 4)} s⁻¹ <small>(${err(k)}, n = ${n})</small></p>`);
+    const errTxt = (k) => `${((k - kT) / kT) * 100 >= 0 ? '+' : '−'}${Math.abs(((k - kT) / kT) * 100).toFixed(2)} % frente a la teórica`;
+    const val = (key, k, n) => (k == null ? '<p class="val">Faltan mediciones…</p>' : `<p class="val"><span data-x="${key}">${fmtSig(k, 4)} s⁻¹</span> <small>(${errTxt(k)}, n = ${n})</small></p>`);
     res.innerHTML = `
       <div class="method">
         <h4>k teórica (propiedades físicas)</h4>
-        ${M(S.k, S.EQ, frac(row(S.h, S.A), row(S.rho, S.c, S.V)), S.EQ, num(kT), unit('s⁻¹'))}
+        ${Mx('f-kT', S.k, S.EQ, frac(row(S.h, S.A), row(S.rho, S.c, S.V)), S.EQ, xn('r-kT', kT), unit('s⁻¹'))}
       </div>
       <div class="method">
         <h4>① Promedio de razones (método del informe)</h4>
-        ${M(sub(S.k, mn('1')), S.EQ, S.MINUS, frac(mn('1'), S.n), S.sum, frac(row(mi('Δ'), S.T, mo('/'), mi('Δ'), S.t), row(S.Ti, S.MINUS, S.Tm)))}
-        ${valOrWait(A.k1, A.n1)}
-        <p>Tiene un sesgo que se puede predecir, porque usa diferencias finitas: sin ruido daría (e<sup>kΔt</sup> − 1)/Δt = <strong>${fmtSig(bias, 4)} s⁻¹</strong>. Con un Δt más pequeño, k₁ se acerca a la teórica.</p>
+        ${Mx('f-k1', S.k1, S.EQ, S.MINUS, frac(mn('1'), S.n), S.sum, frac(row(S.DT, mo('/'), S.Dt), row(S.Ti, S.MINUS, S.Tm)))}
+        ${val('r-k1', A.k1, A.n1)}
+        <p>Tiene un sesgo que se puede predecir, porque usa diferencias finitas: sin ruido daría (e<sup>kΔt</sup> − 1)/Δt = <strong><span data-x="r-bias">${fmtSig(A.bias, 4)} s⁻¹</span></strong>. Con un Δt más pequeño, k₁ se acerca a la teórica.</p>
       </div>
       <div class="method">
         <h4>② Logaritmo por intervalo (exacto, sin sesgo)</h4>
-        ${M(sub(S.k, mn('2')), S.EQ, frac(mn('1'), S.n), S.sum, frac(mn('1'), row(mi('Δ'), S.t)), S.ln, par(frac(row(S.Tim1, S.MINUS, S.Tm), row(S.Ti, S.MINUS, S.Tm))))}
-        ${valOrWait(A.k2, A.n2)}
+        ${Mx('f-k2', S.k2, S.EQ, frac(mn('1'), S.n), S.sum, frac(mn('1'), S.Dt), S.ln, par(frac(row(S.Tim1, S.MINUS, S.Tm), row(S.Ti, S.MINUS, S.Tm))))}
+        ${val('r-k2', A.k2, A.n2)}
       </div>
       <div class="method">
         <h4>③ Regresión lineal de ln|T − Tₘ| contra t</h4>
-        ${M(mi('y'), S.EQ, S.ln, bars(S.T, S.MINUS, S.Tm), S.EQ, mi('a'), S.PLUS, mi('b'), S.t, sp, mtext(';'), sp, mi('b'), S.EQ, frac(row(S.sum, par(sub(S.t, S.i), S.MINUS, over(S.t, mo('¯'))), par(sub(mi('y'), S.i), S.MINUS, over(mi('y'), mo('¯')))), row(S.sum, sup(par(sub(S.t, S.i), S.MINUS, over(S.t, mo('¯'))), mn('2')))), sp, mtext(';'), sp, sub(S.k, mn('3')), S.EQ, S.MINUS, mi('b'))}
-        ${reg ? `<p class="val">${fmtSig(-reg.b, 4)} s⁻¹ <small>(${err(-reg.b)}, n = ${reg.n})</small></p>
-          <p>R² = ${reg.r2.toFixed(6)} · T₀ estimada = Tₘ ${d.dT0 >= 0 ? '+' : '−'} e<sup>a</sup> = ${fmtTemp(l.Tm + Math.sign(d.dT0 || 1) * Math.exp(reg.a))} (real: ${fmtTemp(l.T0)})</p>` : '<p class="val">Faltan mediciones…</p>'}
+        ${Mx('f-k3', S.y, S.EQ, S.ln, bars(S.T, S.MINUS, S.Tm), S.EQ, S.a, S.PLUS, S.b, S.t, sp, mtext(';'), sp, S.b, S.EQ, frac(row(S.sum, par(S.ti, S.MINUS, S.tbar), par(S.yi, S.MINUS, S.ybar)), row(S.sum, sup(par(S.ti, S.MINUS, S.tbar), mn('2')))), sp, mtext(';'), sp, S.k3, S.EQ, S.MINUS, S.b)}
+        ${reg ? `${val('r-k3', -reg.b, reg.n)}
+          <p><span data-x="r-R2">R² = ${reg.r2.toFixed(6)}</span> · <span data-x="r-T0est">T₀ estimada = Tₘ ${d.dT0 >= 0 ? '+' : '−'} e<sup>a</sup> = ${fmtTemp(l.Tm + Math.sign(d.dT0 || 1) * Math.exp(reg.a))}</span> (real: ${fmtTemp(l.T0)})</p>` : '<p class="val">Faltan mediciones…</p>'}
       </div>`;
     drawLnChart(A);
+  }
+
+  // ===================== EXPLICACIONES AL HACER CLIC =====================
+  const f4 = (x) => fmtSig(x, 4);
+  function ctx() {
+    const l = focusLane();
+    if (!l || !l.d || l.d.error) return null;
+    const t = state.simTime, T = Tat(l, t);
+    return { l, d: l.d, mt: l.d.metal, t, T, th: T - l.Tm, E: Math.exp(-l.d.k * t) };
+  }
+
+  // k: tipo · t: título · d: descripción · v: valor en el experimento en foco (opcional)
+  const EXPLAIN = {
+    // ---- símbolos ----
+    T: { k: 'Símbolo', t: 'T — temperatura de la pieza', d: 'Temperatura media de la pieza en el instante t, en °C. Es la cantidad que describe la Ley de Newton.', v: (c) => `En t = ${fmtTime(c.t)}: T = ${fmtTemp(c.T)}` },
+    t: { k: 'Símbolo', t: 't — tiempo', d: 'Tiempo transcurrido desde que la pieza entra al medio, en segundos. Es tiempo físico real, no el tiempo de la animación.', v: (c) => `Ahora: t = ${fmtTime(c.t)}` },
+    k: { k: 'Símbolo', t: 'k — constante de la Ley de Newton', d: 'Mide qué tan rápido la pieza se acerca a la temperatura del medio. Unidades: 1/s. Mientras mayor es k, más rápido cambia la temperatura. Aquí se calcula con propiedades reales: k = hA/(ρcV).', v: (c) => `k = ${f4(c.d.k)} s⁻¹` },
+    Tm: { k: 'Símbolo', t: 'Tₘ — temperatura del medio', d: 'Temperatura del aire, del líquido o del horno que rodea la pieza. Es el valor al que tiende T con el tiempo (la asíntota de la curva).', v: (c) => `Tₘ = ${fmtTemp(c.l.Tm)} (${c.d.fluid.short})` },
+    T0: { k: 'Símbolo', t: 'T₀ — temperatura inicial', d: 'Temperatura de la pieza en t = 0, justo al entrar al medio.', v: (c) => `T₀ = ${fmtTemp(c.l.T0)}` },
+    h: { k: 'Símbolo', t: 'h — coeficiente de convección', d: 'Qué tan bien el medio intercambia calor con la superficie, en W/m²·K. Aire quieto ≈ 10, aceite ≈ 800, agua ≈ 3000.', v: (c) => `h = ${c.l.h} W/m²·K (${c.d.fluid.short})` },
+    A: { k: 'Símbolo', t: 'A — área de la superficie', d: 'Superficie por donde entra o sale el calor: la cara lateral del cilindro más sus dos tapas, A = πDL + 2π(D/2)².', v: (c) => `A = ${f4(c.d.A)} m² = ${fmtSig(c.d.A * 1e4, 4)} cm²` },
+    V: { k: 'Símbolo', t: 'V — volumen', d: 'Volumen de la pieza cilíndrica: V = π(D/2)²·L.', v: (c) => `V = ${f4(c.d.V)} m³ = ${fmtSig(c.d.V * 1e6, 4)} cm³` },
+    m: { k: 'Símbolo', t: 'm — masa', d: 'Masa de la pieza: m = ρ·V.', v: (c) => `m = ${f4(c.d.m)} kg = ${fmtSig(c.d.m * 1000, 4)} g` },
+    c: { k: 'Símbolo', t: 'c — calor específico', d: 'Energía necesaria para subir 1 °C la temperatura de 1 kg del metal, en J/kg·K. Un c alto hace que el metal cambie de temperatura más lento.', v: (c) => `c = ${c.mt.c} J/kg·K (${c.mt.short})` },
+    rho: { k: 'Símbolo', t: 'ρ — densidad', d: 'Masa por unidad de volumen del metal, en kg/m³ (tabla de Incropera).', v: (c) => `ρ = ${c.mt.rho} kg/m³ (${c.mt.short})` },
+    Lc: { k: 'Símbolo', t: 'L꜀ — longitud característica', d: 'L꜀ = V/A. Resume la geometría: una pieza gruesa tiene L꜀ grande, más volumen por cada unidad de área, y se enfría más lento.', v: (c) => `L꜀ = ${f4(c.d.Lc)} m = ${fmtSig(c.d.Lc * 1000, 3)} mm` },
+    D: { k: 'Símbolo', t: 'D — diámetro', d: 'Diámetro del cilindro. En la fórmula va en metros.', v: () => `D = ${state.geom.D} mm = ${state.geom.D / 1000} m` },
+    L: { k: 'Símbolo', t: 'L — largo', d: 'Largo del cilindro. En la fórmula va en metros.', v: () => `L = ${state.geom.L} mm = ${state.geom.L / 1000} m` },
+    R: { k: 'Símbolo', t: 'R — radio', d: 'Radio del cilindro, R = D/2.', v: (c) => `R = ${f4(c.d.R)} m` },
+    pi: { k: 'Símbolo', t: 'π — pi', d: 'Constante ≈ 3.14159, la razón entre la circunferencia y su diámetro.' },
+    e: { k: 'Símbolo', t: 'e — número de Euler', d: 'Constante ≈ 2.71828, base de la función exponencial. e^(−kt) es la fracción de la diferencia inicial con el medio que todavía queda en el instante t.' },
+    ln: { k: 'Símbolo', t: 'ln — logaritmo natural', d: 'Función inversa de la exponencial: ln(eˣ) = x. Convierte la curva exponencial en una recta; por eso aparece en la integración y en la regresión.' },
+    tau: { k: 'Símbolo', t: 'τ — constante de tiempo', d: 'τ = 1/k. En τ segundos la diferencia con el medio cae al 37 % (e⁻¹); en 5τ queda menos del 1 %.', v: (c) => `τ = ${fmtTime(c.d.tau)}` },
+    q: { k: 'Símbolo', t: 'q — potencia térmica', d: 'Calor por segundo que cruza la superficie, en W = J/s: q = hA(T − Tₘ). Positiva = la pieza cede calor; negativa = lo absorbe.', v: (c) => `q = ${fmtPower(c.l.h * c.d.A * c.th)} ${c.th >= 0 ? 'saliendo' : 'entrando'}` },
+    Q: { k: 'Símbolo', t: 'Q — energía transferida', d: 'Energía total que la pieza ha cedido (o absorbido) desde t = 0, en joules. Es la integral de la potencia: el área bajo la curva de la sección 4.', v: (c) => `Q = ${fmtEnergy(c.d.C * (c.l.T0 - c.T))}` },
+    dTdt: { k: 'Símbolo', t: 'dT/dt — derivada de la temperatura', d: 'Rapidez con que cambia la temperatura, en °C/s. Negativa = se enfría; positiva = se calienta. La Ley de Newton dice que vale −k(T − Tₘ).', v: (c) => `Ahora: dT/dt = ${fmtSig(-c.d.k * c.th, 4)} °C/s` },
+    int: { k: 'Símbolo', t: '∫ — integral definida', d: 'Suma continua de infinitos pedacitos. Los números abajo y arriba son los límites: desde dónde y hasta dónde se integra. Aquí “deshace” la derivada para encontrar T(t).' },
+    Tp: { k: 'Símbolo', t: 'T′ — variable de integración', d: 'Letra auxiliar que recorre los valores entre T₀ y T. Se usa para no confundirla con el límite superior T.' },
+    tp: { k: 'Símbolo', t: 't′ — variable de integración', d: 'Letra auxiliar que recorre los tiempos entre 0 y t, para no confundirla con el límite superior t.' },
+    kmet: { k: 'Símbolo', t: 'k_metal — conductividad térmica', d: 'Qué tan fácil viaja el calor dentro del metal, en W/m·K. No interviene en k de Newton, pero sí en el número de Biot.', v: (c) => `k_metal = ${c.mt.k} W/m·K (${c.mt.short})` },
+    Bi: { k: 'Símbolo', t: 'Bi — número de Biot', d: 'Bi = hL꜀/k_metal compara la dificultad del calor para moverse dentro del metal con la facilidad para salir por la superficie. Si Bi < 0.1, la pieza tiene temperatura casi uniforme y la Ley de Newton es válida.', v: (c) => `Bi = ${fmtSig(c.d.Bi, 3)} ${c.d.Bi < 0.1 ? '✓ válido' : '⚠ mayor que 0.1'}` },
+    BiR: { k: 'Resultado', t: 'hR/k_metal — Biot radial', d: 'Número de Biot calculado con el radio. Es el dato de entrada para hallar ζ₁ en la solución de un término del cilindro.', v: (c) => `hR/k_metal = ${fmtSig(c.d.BiR, 4)}` },
+    z1: { k: 'Símbolo', t: 'ζ₁ — primera raíz característica', d: 'Número que resuelve ζ·J₁(ζ)/J₀(ζ) = hR/k_metal. Con él se estima cuánto más caliente está el núcleo que la superficie.', v: (c) => `ζ₁ = ${fmtSig(c.d.z, 5)}` },
+    J0: { k: 'Símbolo', t: 'J₀ — función de Bessel de orden 0', d: 'Función especial que aparece al resolver la conducción de calor en un cilindro. J₀(ζ₁) da la relación entre la temperatura de la superficie y la del centro.' },
+    J1: { k: 'Símbolo', t: 'J₁ — función de Bessel de orden 1', d: 'Otra función especial del cilindro; J₁ es la derivada de −J₀.' },
+    tstar: { k: 'Resultado', t: 't* — tiempo para llegar a T*', d: 'Tiempo que tarda la pieza en llegar a la temperatura objetivo T* que digitaste. Se obtiene despejando t de la solución.', v: (c) => (tStarValid(c.l, state.tStar) ? `t* = ${fmtTime(Math.log(c.d.dT0 / (state.tStar - c.l.Tm)) / c.d.k)}` : 'Digita una T* válida arriba.') },
+    Tstar: { k: 'Símbolo', t: 'T* — temperatura objetivo', d: 'La temperatura a la que quieres saber cuándo llega la pieza. Se digita en la casilla de arriba y debe estar entre T₀ y Tₘ.', v: () => (state.tStar != null ? `T* = ${fmtTemp(state.tStar)}` : '') },
+    TsmTm: { k: 'Resultado', t: 'T* − Tₘ', d: 'Diferencia que debe quedar entre la pieza y el medio al llegar a la temperatura objetivo.', v: (c) => (state.tStar != null ? `T* − Tₘ = ${fmtSig(state.tStar - c.l.Tm, 4)} °C` : '') },
+    thalf: { k: 'Resultado', t: 't½ — vida media térmica', d: 't½ = ln 2 / k. Cada t½ la diferencia con el medio se reduce a la mitad, sin importar la temperatura inicial.', v: (c) => `t½ = ${fmtTime(Math.LN2 / c.d.k)}` },
+    // ---- números intermedios ----
+    dT0: { k: 'Resultado', t: 'T₀ − Tₘ — diferencia inicial', d: 'Cuánto más caliente (o más fría, si es negativa) empieza la pieza que el medio. Es la “distancia” que la temperatura tiene que recorrer.', v: (c) => `T₀ − Tₘ = ${fmtSig(c.d.dT0, 4)} °C` },
+    th: { k: 'Resultado', t: 'T − Tₘ — diferencia actual', d: 'Cuánto le falta a la pieza para igualar la temperatura del medio en este instante. Es lo que “empuja” el flujo de calor.', v: (c) => `T − Tₘ = ${fmtSig(c.th, 4)} °C` },
+    T0mT: { k: 'Resultado', t: 'T₀ − T — lo que ya bajó (o subió)', d: 'Cambio de temperatura acumulado desde el inicio. Multiplicado por m·c da la energía transferida.', v: (c) => `T₀ − T = ${fmtSig(c.l.T0 - c.T, 4)} °C` },
+    mkt: { k: 'Resultado', t: '−k·t — exponente', d: 'Producto de la constante k por el tiempo, con signo menos. Mientras más negativo, más cerca está la pieza del equilibrio.', v: (c) => `−kt = ${fmtSig(-c.d.k * c.t, 4)}` },
+    E: { k: 'Resultado', t: 'e^(−kt) — fracción que falta', d: 'Qué fracción de la diferencia inicial todavía queda. Empieza en 1 (100 %) y tiende a 0 en el equilibrio.', v: (c) => `e^(−kt) = ${fmtSig(c.E, 4)} → queda el ${(c.E * 100).toFixed(1)} % de la diferencia inicial` },
+    oneMinusE: { k: 'Resultado', t: '1 − e^(−kt) — fracción ya transferida', d: 'Fracción de la energía total posible que ya se transfirió.', v: (c) => `1 − e^(−kt) = ${fmtSig(1 - c.E, 4)} → ${((1 - c.E) * 100).toFixed(1)} % transferido` },
+    dTdt0: { k: 'Resultado', t: 'Rapidez inicial', d: 'La derivada en t = 0: la máxima rapidez de cambio, porque al inicio la diferencia con el medio es la mayor.', v: (c) => `dT/dt(0) = ${fmtSig(-c.d.k * c.d.dT0, 4)} °C/s` },
+    d2T: { k: 'Resultado', t: 'd²T/dt² — segunda derivada', d: 'Indica la concavidad. Positiva: la curva es cóncava hacia arriba (se enfría y se va frenando). Negativa: cóncava hacia abajo (se calienta y se frena).', v: (c) => `d²T/dt² = ${fmtSig(c.d.k * c.d.k * c.th, 4)} °C/s²` },
+    Qinf: { k: 'Resultado', t: 'Q∞ — energía total posible', d: 'Energía que se habrá transferido cuando la pieza llegue al equilibrio: m·c·(T₀ − Tₘ).', v: (c) => `Q∞ = ${fmtEnergy(c.d.C * c.d.dT0)}` },
+    // ---- análisis (sección 7) ----
+    n: { k: 'Símbolo', t: 'n — cantidad de datos', d: 'Número de filas de la tabla que entran en el cálculo. Las filas marcadas “n/d” no cuentan porque la pieza ya está demasiado cerca de Tₘ.', v: () => { const A = state.lastAna; return A ? `Método ①: n = ${A.n1} · Método ②: n = ${A.n2} · Regresión: n = ${A.reg ? A.reg.n : 0}` : ''; } },
+    i: { k: 'Símbolo', t: 'i — número de fila', d: 'Recorre las filas de la tabla: i = 0 es la primera medición (t = 0), i = 1 la siguiente, etc.' },
+    sum: { k: 'Símbolo', t: 'Σ — sumatoria', d: 'Suma la expresión de la derecha para cada fila, desde i = 1 hasta i = n. Dividirla entre n da el promedio.' },
+    Ti: { k: 'Símbolo', t: 'Tᵢ — temperatura de la fila i', d: 'La temperatura medida en la fila i de la tabla (columna T).' },
+    Tim1: { k: 'Símbolo', t: 'Tᵢ₋₁ — temperatura de la fila anterior', d: 'La temperatura medida en la fila de arriba. Comparándola con Tᵢ se obtiene cuánto bajó en un intervalo Δt.' },
+    DT: { k: 'Símbolo', t: 'ΔT — cambio de temperatura', d: 'Diferencia entre dos mediciones seguidas: ΔT = Tᵢ − Tᵢ₋₁. Negativa si la pieza se enfría.' },
+    Dt: { k: 'Símbolo', t: 'Δt — intervalo de muestreo', d: 'Tiempo entre dos mediciones seguidas. Se cambia en la casilla de arriba. Un Δt pequeño reduce el sesgo del método ①.', v: () => `Δt = ${fmtSig(state.dtAna, 4)} s` },
+    y: { k: 'Símbolo', t: 'y — variable linealizada', d: 'y = ln|T − Tₘ|. Si la Ley de Newton se cumple, y contra t es una línea recta de pendiente −k.' },
+    a: { k: 'Símbolo', t: 'a — intercepto de la recta', d: 'Valor de y cuando t = 0. Como y(0) = ln|T₀ − Tₘ|, de a se puede estimar la temperatura inicial.', v: () => (state.lastAna && state.lastAna.reg ? `a = ${fmtSig(state.lastAna.reg.a, 5)}` : '') },
+    b: { k: 'Símbolo', t: 'b — pendiente de la recta', d: 'Cuánto baja y por cada segundo. En la Ley de Newton la pendiente es −k, por eso k₃ = −b.', v: () => (state.lastAna && state.lastAna.reg ? `b = ${fmtSig(state.lastAna.reg.b, 5)} s⁻¹` : '') },
+    ti: { k: 'Símbolo', t: 'tᵢ — tiempo de la fila i', d: 'El tiempo de cada medición (columna t de la tabla).' },
+    yi: { k: 'Símbolo', t: 'yᵢ — valor linealizado de la fila i', d: 'yᵢ = ln|Tᵢ − Tₘ|, la última columna de la tabla.' },
+    tbar: { k: 'Símbolo', t: 't̄ — promedio de los tiempos', d: 'Media de los tᵢ usados en la regresión.', v: () => (state.lastAna && state.lastAna.reg ? `t̄ = ${fmtSig(state.lastAna.reg.tb, 5)} s` : '') },
+    ybar: { k: 'Símbolo', t: 'ȳ — promedio de los yᵢ', d: 'Media de los valores ln|Tᵢ − Tₘ| usados en la regresión.', v: () => (state.lastAna && state.lastAna.reg ? `ȳ = ${fmtSig(state.lastAna.reg.yb, 5)}` : '') },
+    // ---- resultados de la sección 7 ----
+    'r-kT': { k: 'Resultado', t: 'k teórica', d: 'La k “verdadera” del modelo, calculada con las propiedades del metal y del medio. Es la referencia contra la que se comparan los tres métodos experimentales.', v: (c) => `k = ${f4(c.d.k)} s⁻¹` },
+    'r-k1': { k: 'Resultado', t: 'k₁ — promedio de razones', d: 'Se calcula la razón (ΔT/Δt)/(T − Tₘ) en cada fila, se promedian y se cambia el signo. Es el método del informe del profesor. Da un valor algo mayor que el teórico porque ΔT/Δt es una aproximación de la derivada (diferencia finita), no la derivada exacta.', v: () => { const A = state.lastAna; return A && A.k1 != null ? `k₁ = ${f4(A.k1)} s⁻¹ con n = ${A.n1} razones · esperado sin ruido: ${f4(A.bias)} s⁻¹` : ''; } },
+    'r-k2': { k: 'Resultado', t: 'k₂ — logaritmo por intervalo', d: 'En cada intervalo calcula ln((Tᵢ₋₁ − Tₘ)/(Tᵢ − Tₘ))/Δt. Para una exponencial esta fórmula es exacta, así que sin ruido da justo la k teórica.', v: () => { const A = state.lastAna; return A && A.k2 != null ? `k₂ = ${f4(A.k2)} s⁻¹ con n = ${A.n2} intervalos` : ''; } },
+    'r-k3': { k: 'Resultado', t: 'k₃ — regresión lineal', d: 'Ajusta por mínimos cuadrados la mejor recta a los puntos (t, ln|T − Tₘ|) de la gráfica de la derecha. k₃ es menos la pendiente. Usa todos los datos a la vez, por eso es el método más robusto frente al ruido.', v: () => { const A = state.lastAna; return A && A.reg ? `k₃ = ${f4(-A.reg.b)} s⁻¹ con n = ${A.reg.n} puntos` : ''; } },
+    'r-bias': { k: 'Resultado', t: 'Sesgo esperado del método ①', d: 'Si no hubiera ruido, cada razón valdría exactamente (1 − e^(kΔt))/Δt, así que k₁ daría (e^(kΔt) − 1)/Δt en lugar de k. La diferencia crece con Δt: por eso conviene medir seguido.', v: (c) => `(e^(kΔt) − 1)/Δt = ${f4(Math.expm1(c.d.k * state.dtAna) / state.dtAna)} s⁻¹ frente a k = ${f4(c.d.k)} s⁻¹` },
+    'r-R2': { k: 'Resultado', t: 'R² — coeficiente de determinación', d: 'Qué tan bien los puntos se ajustan a una recta: 1 = recta perfecta. Un R² muy cercano a 1 confirma que el enfriamiento es exponencial, como dice la Ley de Newton.', v: () => (state.lastAna && state.lastAna.reg ? `R² = ${state.lastAna.reg.r2.toFixed(6)}` : '') },
+    'r-T0est': { k: 'Resultado', t: 'T₀ estimada', d: 'A partir del intercepto a de la recta: T₀ ≈ Tₘ ± eᵃ. Si se parece a la T₀ real, las mediciones son coherentes con el modelo.', v: (c) => (state.lastAna && state.lastAna.reg ? `T₀ estimada = ${fmtTemp(c.l.Tm + Math.sign(c.d.dT0 || 1) * Math.exp(state.lastAna.reg.a))} · real = ${fmtTemp(c.l.T0)}` : '') },
+    // ---- columnas de las tablas ----
+    'c-i': { k: 'Columna', t: 'Número de medición', d: 'Orden de la medición: 0 es el instante inicial.' },
+    'c-t': { k: 'Columna', t: 't — tiempo de la medición', d: 'Segundos desde el inicio. Las mediciones se toman cada Δt.' },
+    'c-T': { k: 'Columna', t: 'T — temperatura medida', d: 'Temperatura de la pieza en ese instante. Sin modo laboratorio es el valor exacto del modelo; con modo laboratorio incluye ruido de sensor y debajo, en gris, aparece la temperatura real.' },
+    'c-rate': { k: 'Columna', t: 'ΔT/Δt — rapidez medida', d: '(Tᵢ − Tᵢ₋₁)/Δt: cuánto cambió la temperatura por segundo entre esta fila y la anterior. Es la versión “de laboratorio” de la derivada dT/dt.' },
+    'c-th': { k: 'Columna', t: 'T − Tₘ — diferencia con el medio', d: 'Cuánto le falta a la pieza para alcanzar la temperatura del medio. Tiende a 0.' },
+    'c-ratio': { k: 'Columna', t: '(ΔT/Δt)/(T − Tₘ) — la razón del informe', d: 'Según la Ley de Newton, dT/dt = −k(T − Tₘ), así que esta razón debería valer aproximadamente −k en todas las filas. “n/d” significa que T ya está tan cerca de Tₘ que el cálculo no es confiable.' },
+    'c-ln': { k: 'Columna', t: 'ln|T − Tₘ| — linealización', d: 'Aplicar logaritmo convierte la exponencial en una recta: ln|T − Tₘ| = ln|T₀ − Tₘ| − k·t. Estos son los puntos de la gráfica de la derecha.' },
+    // ---- fórmulas completas ----
+    'f-newton': { k: 'Fórmula', t: 'Ley de Enfriamiento de Newton', d: 'Ecuación diferencial: la rapidez de cambio de T es proporcional a la diferencia con el medio. El signo menos hace que T se acerque a Tₘ: si la pieza está más caliente, baja; si está más fría, sube.' },
+    'f-balance': { k: 'Fórmula', t: 'Balance de energía', d: 'Energía que pierde la pieza por segundo (m·c·dT/dt) = calor que sale por convección (h·A·(T − Tₘ)). Comparando con la Ley de Newton se identifica k = hA/(mc).' },
+    'f-area': { k: 'Fórmula', t: 'Área del cilindro', d: 'Cara lateral (π·D·L) más las dos tapas circulares (2·π·(D/2)²). Las medidas se pasan de mm a m.' },
+    'f-vol': { k: 'Fórmula', t: 'Volumen del cilindro', d: 'Área de la base π(D/2)² por el largo L.' },
+    'f-lc': { k: 'Fórmula', t: 'Longitud característica y masa', d: 'L꜀ = V/A resume la forma de la pieza; la masa es densidad por volumen.' },
+    'f-k': { k: 'Fórmula', t: 'Cálculo de k', d: 'Se reemplazan h, ρ, c y L꜀ por sus valores. τ = 1/k es la constante de tiempo.' },
+    'f-sep': { k: 'Fórmula', t: 'Separación de variables', d: 'Se divide entre (T − Tₘ) y se multiplica por dt para que cada lado dependa de una sola variable. Así se puede integrar cada lado por separado.' },
+    'f-int': { k: 'Fórmula', t: 'Integración de ambos lados', d: 'El lado izquierdo suma los cambios de temperatura desde T₀ hasta T; el derecho suma el tiempo desde 0 hasta t.' },
+    'f-barrow': { k: 'Fórmula', t: 'Regla de Barrow', d: 'La antiderivada de 1/(T′ − Tₘ) es ln|T′ − Tₘ|; se evalúa en el límite de arriba menos el de abajo.' },
+    'f-lnres': { k: 'Fórmula', t: 'Resultado de la integral', d: 'Diferencia de logaritmos igual a −k·t.' },
+    'f-exp': { k: 'Fórmula', t: 'Propiedad del logaritmo y exponencial', d: 'ln a − ln b = ln(a/b). Luego se aplica e a ambos lados para quitar el logaritmo.' },
+    'f-sol': { k: 'Fórmula', t: 'Solución general T(t)', d: 'La temperatura parte de T₀ y se acerca a Tₘ de forma exponencial. Es la fórmula que dibuja la gráfica de la sección 3.' },
+    'f-solnum': { k: 'Fórmula', t: 'Solución con los números del experimento', d: 'La misma solución, reemplazando Tₘ, T₀ − Tₘ y k por sus valores. Sirve para calcular T en cualquier instante.' },
+    'f-eval': { k: 'Fórmula', t: 'Evaluación paso a paso', d: 'Primero el exponente −kt, luego e elevado a ese exponente y al final la temperatura. Todo con el tiempo actual de la simulación.' },
+    'f-deriv': { k: 'Fórmula', t: 'Derivada de la solución', d: 'Derivar e^(−kt) da −k·e^(−kt) (regla de la cadena). El resultado vuelve a ser −k(T − Tₘ), lo que comprueba que la solución cumple la ecuación.' },
+    'f-derivnum': { k: 'Fórmula', t: 'Rapidez con números', d: 'La derivada evaluada en un instante concreto.' },
+    'f-deriv2': { k: 'Fórmula', t: 'Segunda derivada', d: 'Derivar otra vez multiplica por −k de nuevo: queda k²(T₀ − Tₘ)e^(−kt). Su signo indica la concavidad de la curva.' },
+    'f-q': { k: 'Fórmula', t: 'Potencia térmica', d: 'Calor por segundo = h·A·(T − Tₘ), con los valores de este instante.' },
+    'f-Qint': { k: 'Fórmula', t: 'Energía como integral de la potencia', d: 'La energía es la suma (integral) de la potencia en el tiempo. Se reemplaza T − Tₘ por (T₀ − Tₘ)e^(−kt′).' },
+    'f-Qanti': { k: 'Fórmula', t: 'Antiderivada de la exponencial', d: 'La antiderivada de e^(−kt′) es −e^(−kt′)/k. Evaluando entre 0 y t queda (1 − e^(−kt))/k.' },
+    'f-Q': { k: 'Fórmula', t: 'Energía transferida', d: 'Como hA/k = mc, la energía queda Q = mc(T₀ − Tₘ)(1 − e^(−kt)).' },
+    'f-Qcheck': { k: 'Fórmula', t: 'Comprobación', d: 'La energía también es m·c por el cambio de temperatura. Si coincide con la integral, el cálculo es correcto.' },
+    'f-Qinf': { k: 'Fórmula', t: 'Energía total', d: 'Cuando t → ∞, e^(−kt) → 0 y la energía tiende a m·c·(T₀ − Tₘ).' },
+    'f-tstar': { k: 'Fórmula', t: 'Tiempo para llegar a T*', d: 'Se despeja t de la solución: t* = (1/k)·ln((T₀ − Tₘ)/(T* − Tₘ)).' },
+    'f-thalf': { k: 'Fórmula', t: 'Vida media', d: 'Caso particular de t* cuando T* − Tₘ es la mitad de T₀ − Tₘ: t½ = ln 2 / k.' },
+    'f-bi': { k: 'Fórmula', t: 'Número de Biot', d: 'Bi = h·L꜀/k_metal. Si es menor que 0.1, el modelo de Newton (temperatura uniforme) es válido.' },
+    'f-zeta': { k: 'Fórmula', t: 'Ecuación característica del cilindro', d: 'Se resuelve numéricamente para hallar ζ₁, que permite estimar el perfil de temperatura dentro de la pieza.' },
+    'f-kT': { k: 'Fórmula', t: 'k teórica', d: 'k = hA/(ρcV) con las propiedades reales del metal, el h del medio y la geometría.' },
+    'f-k1': { k: 'Fórmula', t: 'Método ①: promedio de razones', d: 'Para cada fila se divide la rapidez medida ΔT/Δt entre la diferencia Tᵢ − Tₘ. Se suman las n razones, se dividen entre n (promedio) y se cambia el signo.' },
+    'f-k2': { k: 'Fórmula', t: 'Método ②: logaritmo por intervalo', d: 'En cada intervalo, la diferencia con el medio se divide por e^(kΔt). Por eso ln del cociente entre Δt da k exacta. Se promedian los n intervalos.' },
+    'f-k3': { k: 'Fórmula', t: 'Método ③: regresión lineal', d: 'y = a + b·t es la recta que mejor se ajusta a los puntos. La pendiente b se calcula con la fórmula de mínimos cuadrados y k₃ = −b.' },
+  };
+
+  function explainKey(key) {
+    const e = EXPLAIN[key];
+    if (!e) return null;
+    const c = ctx();
+    let v = '';
+    if (e.v && c) { try { v = e.v(c) || ''; } catch { v = ''; } }
+    return { kind: e.k, title: e.t, body: `<p>${e.d}</p>`, value: v };
+  }
+
+  function noiseLine(meas, real) {
+    const noise = meas - real;
+    return `<p class="xp-calc">Temperatura real (modelo) = <b>${minus(real.toFixed(2))} °C</b><br>Ruido del sensor = <b>${noise >= 0 ? '+' : '−'}${Math.abs(noise).toFixed(2)} °C</b><br>Medición = ${minus(real.toFixed(2))} ${noise >= 0 ? '+' : '−'} ${Math.abs(noise).toFixed(2)} = <b>${minus(meas.toFixed(2))} °C</b></p>`;
+  }
+
+  function explainRow(i) {
+    const A = state.lastAna;
+    if (!A || !A.rows[i]) return null;
+    const r = A.rows[i], p = i > 0 ? A.rows[i - 1] : null, l = A.l, dt = A.dt;
+    const T = (x) => minus(x.toFixed(2));
+    let h = `<p>Medición tomada en <b>t = ${fmtNum(r.t)} s</b>${state.lab ? ' con ruido de sensor' : ' (valor exacto del modelo)'}.</p>`;
+    if (state.lab) h += noiseLine(r.T, r.real);
+    if (p) {
+      h += `<p class="xp-calc"><b>ΔT/Δt</b> = (Tᵢ − Tᵢ₋₁)/Δt = (${T(r.T)} − ${T(p.T)}) / ${fmtNum(dt)} = <b>${minus(r.rate.toFixed(4))} °C/s</b></p>`;
+    }
+    h += `<p class="xp-calc"><b>T − Tₘ</b> = ${T(r.T)} − ${T(l.Tm)} = <b>${T(r.th)} °C</b></p>`;
+    if (r.ratio != null) h += `<p class="xp-calc"><b>Razón</b> = ${minus(r.rate.toFixed(4))} / ${T(r.th)} = <b>${minus(r.ratio.toFixed(5))}</b> ≈ −k (teórica −${f4(l.d.k)})</p>`;
+    else if (p) h += `<p class="xp-calc"><b>Razón: n/d</b> — |T − Tₘ| = ${Math.abs(r.th).toFixed(2)} °C es menor que ${A.thr.toFixed(2)} °C, así que el ruido o el redondeo pesarían más que la señal.</p>`;
+    if (r.ln != null) h += `<p class="xp-calc"><b>ln|T − Tₘ|</b> = ln(${Math.abs(r.th).toFixed(2)}) = <b>${minus(r.ln.toFixed(4))}</b></p>`;
+    if (r.kLog != null) h += `<p class="xp-calc"><b>k del intervalo (método ②)</b> = ln(${T(p.th)} / ${T(r.th)}) / ${fmtNum(dt)} = <b>${f4(r.kLog)} s⁻¹</b></p>`;
+    if (p && state.lab && Math.sign(r.T - p.T) !== Math.sign(-l.d.dT0) && Math.abs(r.T - p.T) > 1e-9) {
+      h += `<p class="xp-warn">⚠ Aquí la medición ${l.d.dT0 > 0 ? 'subió' : 'bajó'} aunque la pieza ${l.d.dT0 > 0 ? 'se está enfriando' : 'se está calentando'}. La temperatura real cambió solo ${Math.abs(r.real - p.real).toFixed(2)} °C en este intervalo, menos que el ruido del sensor. No es un error del cálculo: así se ven las mediciones reales cerca del equilibrio.</p>`;
+    }
+    return { kind: 'Fila de la tabla', title: `Fila i = ${i}`, body: h, value: '' };
+  }
+
+  function explainCell(laneId, i) {
+    const l = state.lanes.find((x) => x.id === laneId);
+    if (!l || !l.d || l.d.error) return null;
+    const dt = state.dtComp, t = i * dt;
+    const meas = measured(l, t, i, 1), real = Tat(l, t);
+    let h = `<p>Experimento <b>${l.id}</b> (${esc(l.d.metal.short)} en ${esc(l.d.fluid.short)}), medición <b>#${i}</b> en <b>t = ${fmtNum(t)} s</b>.</p>`;
+    h += `<p class="xp-calc">T(t) = Tₘ + (T₀ − Tₘ)·e^(−kt) = ${minus(String(l.Tm))} + (${fmtSig(l.d.dT0, 4)})·e^(−${f4(l.d.k)}·${fmtNum(t)}) = <b>${minus(real.toFixed(2))} °C</b></p>`;
+    if (state.lab) {
+      h += noiseLine(meas, real);
+      if (i > 0) {
+        const pm = measured(l, t - dt, i - 1, 1), pr = Tat(l, t - dt);
+        if (Math.sign(meas - pm) !== Math.sign(-l.d.dT0) && Math.abs(meas - pm) > 1e-9) {
+          h += `<p class="xp-warn">⚠ Esta medición ${l.d.dT0 > 0 ? 'es mayor' : 'es menor'} que la anterior (${minus(pm.toFixed(2))} °C), pero la temperatura real sí ${l.d.dT0 > 0 ? 'bajó' : 'subió'}: de ${minus(pr.toFixed(2))} a ${minus(real.toFixed(2))} °C. El cambio real (${Math.abs(real - pr).toFixed(2)} °C) es menor que el ruido del sensor.</p>`;
+        }
+      }
+    }
+    return { kind: 'Medición', title: `Medición de ${l.id} en t = ${fmtNum(t)} s`, body: h, value: '' };
+  }
+
+  let pop = null;
+  function hidePop() { if (pop) pop.hidden = true; document.querySelectorAll('.x-active').forEach((el) => el.classList.remove('x-active')); }
+  function showPop(info, x, y, target) {
+    if (!pop) {
+      pop = document.createElement('div');
+      pop.className = 'xpop';
+      pop.setAttribute('role', 'dialog');
+      document.body.appendChild(pop);
+    }
+    hidePop();
+    target.classList.add('x-active');
+    pop.innerHTML = `<button class="xpop-close" aria-label="Cerrar">✕</button>
+      <div class="xpop-kind">${info.kind}</div><h5>${info.title}</h5>${info.body}
+      ${info.value ? `<div class="xpop-val">📍 En este experimento: <b>${info.value}</b></div>` : ''}`;
+    pop.hidden = false;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const w = Math.min(380, vw - 20);
+    pop.style.width = `${w}px`;
+    const h = pop.offsetHeight;
+    pop.style.left = `${Math.min(Math.max(10, x + 12), vw - w - 10)}px`;
+    pop.style.top = `${y + 16 + h < vh ? y + 16 : Math.max(10, y - h - 12)}px`;
+  }
+
+  function setupExplain() {
+    document.addEventListener('click', (e) => {
+      if (pop && pop.contains(e.target)) { if (e.target.closest('.xpop-close')) hidePop(); return; }
+      const xEl = e.target.closest('[data-x]');
+      const rowEl = e.target.closest('#tbl-ana tbody tr[data-row]');
+      const cellEl = e.target.closest('#tbl-comp td[data-lane]');
+      let info = null, target = null;
+      if (xEl) { info = explainKey(xEl.dataset.x); target = xEl; }
+      else if (rowEl) { info = explainRow(Number(rowEl.dataset.row)); target = rowEl; }
+      else if (cellEl) { info = explainCell(cellEl.dataset.lane, Number(cellEl.dataset.i)); target = cellEl; }
+      if (info) showPop(info, e.clientX, e.clientY, target); else hidePop();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePop(); });
+    window.addEventListener('scroll', hidePop, { passive: true });
   }
 
   // ===================== TABLAS DE PROPIEDADES =====================
@@ -1398,5 +1637,6 @@
   state.lanes.forEach(bindLane);
   buildFocus();
   bindGlobal();
+  setupExplain();
   applyPreset('clasico');
 })();

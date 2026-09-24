@@ -255,7 +255,7 @@
       <tr><th>Opción</th><th>Qué hace</th></tr>
       <tr><td>Vista de cámara térmica</td><td class="wrap-ok">Pinta la escena con la paleta <em>ironbow</em> de una cámara infrarroja: negro y morado = frío, amarillo y blanco = caliente. Aparece una barra de escala con la temperatura mínima y máxima.</td></tr>
       <tr><td>Tiempo en escala logarítmica</td><td class="wrap-ok">Cambia el eje horizontal de la gráfica 3. Sirve para comparar medios cuyos tiempos difieren mucho (segundos contra horas).</td></tr>
-      <tr><td>Modo laboratorio</td><td class="wrap-ok">Agrega <strong>ruido de sensor</strong> a las mediciones de las tablas y de la gráfica, como en un experimento real. Las escenas y las curvas siguen siendo exactas.</td></tr>
+      <tr><td>Modo laboratorio</td><td class="wrap-ok">Agrega a las mediciones de las tablas y de la gráfica el <strong>ruido de un sensor</strong> tipo termopar K: ±(0.3 °C + 0.5 % de la lectura). Debajo de cada medición aparece en gris la temperatura real. Las escenas y las curvas siguen siendo exactas.</td></tr>
     </table>
     <figure><img src="img/08-termica.png" alt="Vista de cámara térmica"><figcaption>Vista de cámara térmica: cada color corresponde a una temperatura.</figcaption></figure>
 
@@ -415,6 +415,7 @@
       <tr><td>9 · Tiempo objetivo</td><td class="wrap-ok">Despeje de t* para llegar a una temperatura <strong>T*</strong> y la vida media t½ = ln 2 / k.</td></tr>
       <tr><td>10 · Validez</td><td class="wrap-ok">Número de Biot y, si hace falta, la raíz ζ₁ del cilindro con la estimación de núcleo y superficie.</td></tr>
     </table>
+    <div class="callout tip"><strong>👆 Clic para entender</strong>Haz clic en cualquier <strong>letra</strong> (T, k, h, ρ, Tₘ…), <strong>número</strong> o <strong>fórmula</strong> de esta sección. Se abre un recuadro que explica qué es y cuánto vale en el experimento en foco. Por ejemplo, al hacer clic en 7832 aparece “ρ — densidad… ρ = 7832 kg/m³ (Acero 1010)”.</div>
     <h3>Usar la temperatura objetivo T*</h3>
     <p>Arriba de los pasos está la casilla <strong>Temperatura objetivo T*</strong>. Digita una temperatura entre T₀ y Tₘ y pulsa <kbd>Enter</kbd>: el paso 9 calcula exactamente cuántos segundos tarda la pieza en llegar a ella.</p>
     <div class="callout idea"><strong>🔎 Comprueba</strong>Si eliges T* justo a la mitad entre T₀ y Tₘ, el tiempo t* es igual a la vida media t½.</div>
@@ -428,9 +429,11 @@
       <li><strong>Intervalo Δt (s):</strong> cada cuántos segundos se toma una medición. Por defecto es 1/20 del tiempo total; puedes digitar otro valor.</li>
       <li><strong>Columnas:</strong> número de medición, tiempo y temperatura de cada experimento, con su metal y su medio.</li>
       <li>Las filas aparecen a medida que avanza la simulación. Se muestran hasta 400; si hay más, aumenta Δt.</li>
-      <li>Con <strong>modo laboratorio</strong> los valores tienen ruido de sensor.</li>
+      <li>Con <strong>modo laboratorio</strong> los valores tienen ruido de sensor y debajo de cada uno aparece, en gris, la <strong>temperatura real</strong>.</li>
+      <li><strong>Haz clic en cualquier medición</strong> para ver el cálculo T(t) = Tₘ + (T₀ − Tₘ)e<sup>−kt</sup> con sus números y cuánto ruido tiene.</li>
       <li><strong>⬇ Exportar tabla (CSV)</strong> la abre en Excel con acentos correctos.</li>
     </ul>
+    <figure><img src="img/14-clic-medicion.png" alt="Explicación de una medición"><figcaption>Modo laboratorio: cada medición muestra en gris la temperatura real y, con un clic, cuánto es ruido del sensor.</figcaption></figure>
   </section>
 
   <!-- 14 -->
@@ -455,6 +458,16 @@
       <div class="card"><h4>📈 Gráfica de linealización</h4><p>Puntos = mediciones; línea de color = recta ajustada; línea gris = modelo teórico. Si la Ley de Newton se cumple, los puntos quedan sobre una recta.</p></div>
     </div>
     <div class="callout tip"><strong>💡 Recomendado</strong>Activa el <strong>modo laboratorio</strong> para ver cómo el ruido afecta a cada método. La regresión suele ser el más robusto.</div>
+    <div class="callout idea"><strong>👆 Todo se puede consultar con un clic</strong>
+      <ul style="margin:6px 0 0">
+        <li><strong>Una fila de la tabla:</strong> muestra sus cálculos paso a paso, con números (ΔT/Δt, T − Tₘ, la razón, ln|T − Tₘ| y la k de ese intervalo). En modo laboratorio separa la temperatura real del ruido.</li>
+        <li><strong>Un encabezado de columna:</strong> explica qué significa esa columna.</li>
+        <li><strong>Una letra de las fórmulas</strong> (n, Σ, Tᵢ, Δt, a, b, t̄…): explica el símbolo y su valor.</li>
+        <li><strong>Una fórmula completa:</strong> explica qué hace ese método.</li>
+        <li><strong>Un resultado</strong> (k₁, k₂, k₃, R², T₀ estimada, sesgo): explica cómo se obtuvo y cómo interpretarlo.</li>
+      </ul>
+    </div>
+    <figure><img src="img/13-clic-fila.png" alt="Explicación de una fila de la tabla de análisis"><figcaption>Al hacer clic en la fila 3 aparecen todos sus cálculos con números, y la separación entre temperatura real y ruido del sensor.</figcaption></figure>
   </section>
 
   <!-- 15 -->
@@ -554,6 +567,8 @@
   <!-- 20 -->
   <section class="chapter" id="faq">
     <h2><span class="n">20</span>Preguntas frecuentes</h2>
+    <h4>¿Por qué, en modo laboratorio, la temperatura medida sube y baja si la pieza se está enfriando?</h4>
+    <p>La temperatura <strong>real</strong> siempre baja de forma exponencial, y es el valor gris debajo de cada medición. Lo que sube y baja es la <strong>medición</strong>, porque el modo laboratorio le suma el ruido de un sensor real, de ±(0.3 °C + 0.5 % de la lectura). Al principio la pieza baja muchos grados en cada intervalo y el ruido no se nota. Cerca del equilibrio, en cambio, baja apenas unas décimas de grado, menos que el ruido, y por eso algunas mediciones parecen subir. Es exactamente lo que pasa con un termómetro de verdad. Haz clic en la medición para ver cuánto es la temperatura real y cuánto es ruido. Con el modo laboratorio apagado, los valores bajan siempre.</p>
     <h4>Una tarjeta está gris con un mensaje rojo.</h4>
     <p>Algún dato no es físicamente posible, por ejemplo una temperatura sobre el punto de fusión o bajo el cero absoluto. Lee el mensaje, corrige el dato y la tarjeta vuelve a funcionar.</p>
     <h4>El agua termina en un instante y no alcanzo a ver nada.</h4>

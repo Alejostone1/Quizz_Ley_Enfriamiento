@@ -131,6 +131,7 @@
   <section class="panel" id="sec-math">
     <h2><span class="num">5</span> Desarrollo matemático paso a paso <button class="help" data-guide="matematica" title="¿Qué muestra cada paso?">?</button></h2>
     <p class="lead">Cada paso usa los datos del experimento en foco y los números se recalculan en vivo.</p>
+    <p class="click-hint">👆 <strong>Haz clic en cualquier letra, número o fórmula</strong> para ver qué significa y cuánto vale en este experimento.</p>
     <label class="inline-input">Temperatura objetivo T* para el paso 9 (°C)
       <input type="number" id="t-star" step="any">
     </label>
@@ -140,9 +141,11 @@
   <!-- 6 · TABLA COMPARATIVA -->
   <section class="panel" id="sec-comp">
     <h2><span class="num">6</span> Tabla comparativa de mediciones <button class="help" data-guide="comparativa" title="¿Cómo se usa esta tabla?">?</button></h2>
+    <p class="click-hint">👆 <strong>Haz clic en cualquier medición</strong> para ver cómo se calculó y, en modo laboratorio, cuánto ruido de sensor tiene.</p>
     <label class="inline-input">Intervalo de muestreo Δt (s)
       <input type="number" id="dt-comp" min="0.001" step="any">
     </label>
+    <div id="comp-lab"></div>
     <div class="table-wrap"><table id="tbl-comp"></table></div>
     <p class="mini" id="comp-note"></p>
     <button id="btn-csv-comp" class="btn">⬇ Exportar tabla (CSV)</button>
@@ -152,9 +155,11 @@
   <section class="panel" id="sec-ana">
     <h2><span class="num">7</span> Análisis tipo informe: cálculo experimental de k <button class="help" data-guide="analisis" title="¿Cómo se interpreta el análisis?">?</button></h2>
     <p class="lead">Con las mediciones del experimento en foco calculamos k de tres formas y las comparamos con la k teórica. Activa el <strong>modo laboratorio</strong> para simular mediciones reales con ruido.</p>
+    <p class="click-hint">👆 <strong>Haz clic en una fila</strong> para ver sus cálculos paso a paso, y en cualquier <strong>encabezado, letra, fórmula o resultado</strong> para saber qué significa.</p>
     <label class="inline-input">Intervalo de muestreo Δt (s)
       <input type="number" id="dt-ana" min="0.001" step="any">
     </label>
+    <div id="ana-lab"></div>
     <div class="table-wrap"><table id="tbl-ana"></table></div>
     <div class="ana-grid">
       <div class="ana-results" id="ana-results"></div>

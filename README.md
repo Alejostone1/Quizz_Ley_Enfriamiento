@@ -110,6 +110,20 @@ Un interruptor pinta toda la escena con la paleta *ironbow* de una cámara infra
 
 </td>
 </tr>
+<tr>
+<td valign="top">
+
+### 👆 Clic para entender
+Haz clic en cualquier **letra, fórmula, número, columna o fila** de la matemática y del análisis. Aparece qué significa, su valor en el experimento y, para una fila, todos sus cálculos paso a paso.
+
+</td>
+<td valign="top">
+
+### 🔬 Ruido de sensor realista
+El modo laboratorio simula un termopar tipo K, con ±(0.3 °C + 0.5 % de la lectura). Cada medición muestra en gris la **temperatura real** y separa cuánto es señal y cuánto es ruido.
+
+</td>
+</tr>
 </table>
 
 ---
@@ -145,6 +159,10 @@ Un interruptor pinta toda la escena con la paleta *ironbow* de una cámara infra
 <tr>
 <td><img src="docs/img/10-criogenia.png" alt="Criogenia"><br><sub><b>Criogenia</b>: nitrógeno líquido a −196 °C.</sub></td>
 <td><img src="docs/img/11-recorrido.png" alt="Recorrido guiado"><br><sub><b>Recorrido guiado</b> integrado para aprender a usarlo.</sub></td>
+</tr>
+<tr>
+<td><img src="docs/img/13-clic-fila.png" alt="Explicación de una fila"><br><sub><b>Clic en una fila</b>: sus cálculos paso a paso.</sub></td>
+<td><img src="docs/img/14-clic-medicion.png" alt="Explicación de una medición"><br><sub><b>Clic en una medición</b>: temperatura real + ruido del sensor.</sub></td>
 </tr>
 </table>
 

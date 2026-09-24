@@ -382,6 +382,45 @@ td.note-cell{ white-space: normal; text-align:left; min-width: 260px; color: var
 .notes li{ margin-bottom: 6px; }
 .notes strong{ color: var(--text); }
 
+/* ---------- CLIC PARA ENTENDER ---------- */
+.click-hint{
+  display:inline-block; margin: 0 0 12px; padding: 7px 12px;
+  background:#fffbeb; border:1px solid #fde68a; border-radius: 10px;
+  font-size: .84rem; color:#78350f;
+}
+.x{ cursor: help; border-radius: 4px; transition: background .12s ease; }
+.x:hover{ background:#fef3c7; }
+.x .x:hover{ background:#fcd34d; }
+.x.x-active{ background:#fcd34d; }
+math.xf{ cursor: help; border-radius: 8px; transition: background .12s ease; }
+math.xf:hover{ background:#f5f8ff; }
+th[data-x]{ cursor: help; text-decoration: underline dotted #94a3b8; text-underline-offset: 3px; }
+span[data-x]{ cursor: help; border-bottom: 2px dotted #94a3b8; }
+span[data-x]:hover{ background:#fef3c7; }
+#tbl-ana tbody tr[data-row], #tbl-comp td[data-lane]{ cursor: pointer; }
+#tbl-ana tbody tr.x-active td, #tbl-comp td.x-active{ background:#fef3c7; }
+.real{ display:block; font-size: .68rem; color:#94a3b8; line-height: 1.1; }
+.lab-note{
+  margin: 0 0 12px; padding: 10px 14px; border-radius: 10px;
+  background:#eff6ff; border:1px solid #bfdbfe; border-left: 4px solid #3b82f6;
+  font-size: .84rem; color:#1e3a8a; line-height: 1.5;
+}
+.xpop{
+  position: fixed; z-index: 70;
+  background:#fff; border:1px solid var(--border); border-top: 4px solid #f59e0b;
+  border-radius: 12px; padding: 12px 14px 12px;
+  box-shadow: 0 18px 44px rgba(15,23,42,.25);
+  animation: pop .18s ease-out;
+}
+.xpop[hidden]{ display:none; }
+.xpop h5{ margin: 2px 0 6px; font-size: .98rem; color:#16213e; padding-right: 22px; }
+.xpop p{ margin: 0 0 8px; font-size: .86rem; color:#475569; line-height: 1.5; }
+.xpop-kind{ font-size: .68rem; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color:#b45309; }
+.xpop-close{ position:absolute; top: 8px; right: 8px; border:none; background:none; cursor:pointer; color: var(--muted); font-size: .95rem; }
+.xpop-val{ font-size: .84rem; background:#f5f8ff; border-radius: 8px; padding: 7px 10px; color:#1e3a8a; }
+.xp-calc{ font-family: Consolas, "Cascadia Mono", monospace; font-size: .8rem !important; background:#f8fafc; border:1px solid #e2e8f0; border-radius: 8px; padding: 6px 9px; color:#0f172a !important; }
+.xp-warn{ background:#fffbeb; border-left: 3px solid #f59e0b; padding: 6px 9px; border-radius: 6px; color:#78350f !important; }
+
 /* ---------- AYUDA ---------- */
 .hero-actions{ display:flex; flex-wrap:wrap; gap: 10px; margin-top: 16px; }
 .hero-actions .btn{ text-decoration:none; display:inline-flex; align-items:center; }
